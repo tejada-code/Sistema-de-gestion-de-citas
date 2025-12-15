@@ -1,0 +1,43 @@
+<html layout:decorate="_layoutAdministrador">
+<head>
+    <title>Mi Clínica</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <h2 class="fw-bold mb-3">Mi Clínica</h2>
+        <form method="post" th:action="@{/administrador/mi-clinica}" th:object="${clinica}">
+            <div class="mb-3">
+                <label class="form-label">Nombre de la Clínica</label>
+                <input type="text" class="form-control" th:field="*{nombre_clinica}" placeholder="Nombre de la clínica">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Dirección</label>
+                <input type="text" class="form-control" th:field="*{direccion}" placeholder="Dirección">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Teléfono</label>
+                <input type="text" class="form-control" th:field="*{telefono}" placeholder="Teléfono">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">RUC</label>
+                <input type="text" class="form-control" th:field="*{ruc}" placeholder="RUC">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Sitio Web</label>
+                <input type="text" class="form-control" th:field="*{link_web}" placeholder="Sitio web">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Plan de Suscripción</label>
+                <input type="text" class="form-control" th:field="*{plan_suscripcion}" placeholder="Plan de suscripción">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Pasarela de Pago</label>
+                <input type="text" class="form-control" th:field="*{pasarela_pago}" placeholder="Pasarela de pago">
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </form>
+    </div>
+</div>
+</body>
+</html> 

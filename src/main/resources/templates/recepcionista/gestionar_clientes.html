@@ -1,0 +1,236 @@
+<html layout:decorate="_layoutRecepcionista">
+<head>
+    <title>Gestionar Clientes</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <h2>Gestionar Clientes (Dueños)</h2>
+        <div class="card mb-4">
+            <div class="card-header">Registrar Nuevo Cliente</div>
+            <div class="card-body">
+                <form id="nuevoDuenoForm">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Nombres" name="nombres" required />
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Apellidos" name="apellidos" required />
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Celular" name="celular" required />
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="DNI" name="dni" required />
+                        </div>
+                        <div class="col-md-4">
+                            <input type="date" class="form-control" placeholder="Fecha de Nacimiento" name="fecha_nacimiento" required />
+                        </div>
+                        <div class="col-md-4">
+                            <input type="email" class="form-control" placeholder="Email" name="email" required />
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-4"></div>
+                        <div class="col-md-4"></div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-success w-100">Registrar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Lista de Clientes</span>
+                <input type="text" id="filtroClientes" class="form-control w-25" placeholder="Filtrar clientes..." />
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombres</th>
+                                <th>Apellidos</th>
+                                <th>DNI</th>
+                                <th>Celular</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientesTbody">
+                            <!-- Clientes will be rendered here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for Citas -->
+    <div class="modal fade" id="citasClienteModal" tabindex="-1" aria-labelledby="citasClienteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="citasClienteModalLabel">Citas del Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="citasClienteContent">
+                    <!-- Citas will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:inline="javascript">
+        function fetchClientes() {
+            fetch('/api/duenos')
+                .then(res => res.json())
+                .then(data => {
+                    window.clientes = data;
+                    renderClientes();
+                });
+        }
+        function renderClientes() {
+            const filtro = document.getElementById('filtroClientes').value.toLowerCase();
+            const tbody = document.getElementById('clientesTbody');
+            tbody.innerHTML = '';
+            window.clientes.filter(c =>
+                (c.nombres && c.nombres.toLowerCase().includes(filtro)) ||
+                (c.apellidos && c.apellidos.toLowerCase().includes(filtro)) ||
+                (c.dni && c.dni.toLowerCase().includes(filtro)) ||
+                (c.celular && c.celular.toLowerCase().includes(filtro))
+            ).forEach((c, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${c.nombres}</td>
+                    <td>${c.apellidos}</td>
+                    <td>${c.dni}</td>
+                    <td>${c.celular || ''}</td>
+                    <td><button class='btn btn-outline-primary btn-sm' onclick='verCitasCliente(${idx})'>Ver Citas</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('filtroClientes').addEventListener('input', renderClientes);
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchClientes();
+        });
+        window.verCitasCliente = function(idx) {
+            const cliente = window.clientes[idx];
+            const duenoId = cliente.id;
+            const nombre = cliente.nombres;
+            const apellidos = cliente.apellidos;
+            const dni = cliente.dni;
+            document.getElementById('citasClienteContent').innerHTML = `<p>Cargando citas para <strong>${nombre} ${apellidos}</strong> (DNI: ${dni})...</p>`;
+            fetch(`/recepcionista/clientes/${duenoId}/citas`)
+                .then(res => res.json())
+                .then(citas => {
+                    window.citasClienteModal = citas;
+                    function getCitasFuturas() {
+                        const hoy = new Date();
+                        return citas.filter(c => c.estado && c.estado.toLowerCase() !== 'cancelada' && new Date(c.fecha) >= hoy);
+                    }
+                    function getCitasPasadas() {
+                        const hoy = new Date();
+                        return citas.filter(c => c.estado && c.estado.toLowerCase() !== 'cancelada' && new Date(c.fecha) < hoy);
+                    }
+                    function getCitasCanceladas() {
+                        return citas.filter(c => c.estado && c.estado.toLowerCase() === 'cancelada');
+                    }
+                    function getCitasPagosPendientes() {
+                        return citas.filter(c => c.estado && c.estado.toLowerCase() !== 'cancelada' && (!c.pago_estado || c.pago_estado.toLowerCase() === 'pendiente'));
+                    }
+                    function getBadgeClass(metodo) {
+                        const m = (metodo || '').toLowerCase();
+                        if (m === 'pendiente') return 'badge bg-warning';
+                        if (m === 'efectivo') return 'badge bg-success';
+                        if (m === 'pos') return 'badge bg-primary';
+                        if (m === 'yape') return 'badge bg-purple';
+                        if (m === 'plin') return 'badge bg-info';
+                        if (m === 'transferencia') return 'badge bg-secondary';
+                        if (m === 'otro') return 'badge bg-dark';
+                        return 'badge bg-secondary';
+                    }
+                    function renderTablaCitas(citasTabla) {
+                        if (!citasTabla.length) return `<p>No hay citas para esta opción.</p>`;
+                        let html = `<div class='table-responsive'><table class='table table-sm table-bordered'><thead><tr><th>Fecha</th><th>Hora</th><th>Motivo</th><th>Veterinario</th><th>Estado</th><th>Pago</th><th>Monto</th></tr></thead><tbody>`;
+                        citasTabla.forEach(cita => {
+                            html += `<tr>
+                                <td>${cita.fecha || ''}</td>
+                                <td>${cita.hora || ''}</td>
+                                <td>${cita.motivo || ''}</td>
+                                <td>${cita.veterinario || ''}</td>
+                                <td>${cita.estado || ''}</td>
+                                <td><span class='${getBadgeClass(cita.pago_estado)}'>${cita.pago_estado || 'Pendiente'}</span></td>
+                                <td>${cita.monto !== undefined && cita.monto !== null ? cita.monto : ''}</td>
+                            </tr>`;
+                        });
+                        html += `</tbody></table></div>`;
+                        return html;
+                    }
+                    window.renderCitasClienteOpcion = function(opcion) {
+                        let html = `<p>Citas para <strong>${nombre} ${apellidos}</strong> (DNI: ${dni})</p>`;
+                        html += `<div class='btn-group mb-2 w-100' role='group'>
+                            <button type='button' class='btn btn-outline-primary' onclick='window.renderCitasClienteOpcion("futura")'>Citas Futuras</button>
+                            <button type='button' class='btn btn-outline-primary' onclick='window.renderCitasClienteOpcion("pasada")'>Citas Pasadas</button>
+                            <button type='button' class='btn btn-outline-primary' onclick='window.renderCitasClienteOpcion("cancelada")'>Citas Canceladas</button>
+                            <button type='button' class='btn btn-outline-warning' onclick='window.renderCitasClienteOpcion("pendiente")'>Pagos Pendientes</button>
+                        </div>`;
+                        if (opcion === 'futura') {
+                            html += renderTablaCitas(getCitasFuturas());
+                        } else if (opcion === 'pasada') {
+                            html += renderTablaCitas(getCitasPasadas());
+                        } else if (opcion === 'cancelada') {
+                            html += renderTablaCitas(getCitasCanceladas());
+                        } else if (opcion === 'pendiente') {
+                            html += renderTablaCitas(getCitasPagosPendientes());
+                        } else {
+                            html += `<p>Selecciona una opción para ver las citas.</p>`;
+                        }
+                        document.getElementById('citasClienteContent').innerHTML = html;
+                    };
+                    window.renderCitasClienteOpcion('futura');
+                })
+                .catch(err => {
+                    document.getElementById('citasClienteContent').innerHTML = `<p>Error al cargar las citas: ${err}</p>`;
+                });
+            const modal = new bootstrap.Modal(document.getElementById('citasClienteModal'));
+            modal.show();
+        };
+        document.getElementById('nuevoDuenoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            if (!form.email.value) {
+                alert('El email es obligatorio');
+                form.email.focus();
+                return;
+            }
+            const data = {
+                nombres: form.nombres.value,
+                apellidos: form.apellidos.value,
+                celular: form.celular.value,
+                dni: form.dni.value,
+                fecha_nacimiento: form.fecha_nacimiento.value,
+                email: form.email.value
+            };
+            fetch('/recepcionista/clientes/enroll', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(resp => {
+                if (resp.success) {
+                    alert('Cliente registrado exitosamente');
+                    fetchClientes();
+                    form.reset();
+                } else {
+                    alert('Error: ' + resp.error);
+                }
+            })
+            .catch(err => alert('Error en la solicitud: ' + err));
+        });
+    </script>
+</div>
+</body>
+</html> 

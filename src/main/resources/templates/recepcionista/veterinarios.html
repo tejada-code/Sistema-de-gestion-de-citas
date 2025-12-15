@@ -1,0 +1,204 @@
+<html layout:decorate="_layoutRecepcionista">
+<head>
+    <title>Veterinarios - Horario Semanal</title>
+    <style>
+        .calendar-table th, .calendar-table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .calendar-hour {
+            width: 80px;
+            font-weight: bold;
+        }
+        .calendar-active {
+            background-color: #0d6efd;
+            color: #fff;
+            border-radius: 6px;
+        }
+        .vet-list-item {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .vet-list-item.selected, .vet-list-item:hover {
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <div class="row mb-3">
+            <div class="col-12">
+                <h2>Veterinarios</h2>
+                <p class="lead">Consulta el horario semanal de cada veterinario</p>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Horario Semanal</h5>
+                        <span id="selectedVetName" class="fw-bold"></span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered calendar-table">
+                                <thead>
+                                    <tr>
+                                        <th class="calendar-hour">Hora</th>
+                                        <th>Lunes</th>
+                                        <th>Martes</th>
+                                        <th>Miércoles</th>
+                                        <th>Jueves</th>
+                                        <th>Viernes</th>
+                                        <th>Sábado</th>
+                                        <th>Domingo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="calendarBody">
+                                    <!-- Calendar rows will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="noHorarioMsg" class="text-center text-muted" style="display:none;">No hay horario registrado para este veterinario.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Lista de Veterinarios</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="vetList">
+                            <!-- Veterinarians will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Robust day normalization and mapping
+        const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        const normalizedDays = days.map(d => d.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
+        const dayDisplayMap = {};
+        normalizedDays.forEach((norm, idx) => { dayDisplayMap[norm] = days[idx]; });
+
+        const hours = [];
+        for (let h = 7; h <= 21; h++) {
+            hours.push((h < 10 ? '0' : '') + h + ':00');
+        }
+        let veterinarios = [];
+        let selectedVet = null;
+        let horarios = [];
+
+        function fetchVeterinarios() {
+            fetch('/api/veterinarios/detalle')
+                .then(res => res.json())
+                .then(data => {
+                    veterinarios = data;
+                    renderVetList();
+                    if (veterinarios.length > 0) {
+                        selectVet(0);
+                    }
+                });
+        }
+
+        function fetchHorarios(vetId) {
+            fetch(`/api/Veterinario/${vetId}/horarios`)
+                .then(res => res.ok ? res.json() : [])
+                .then(data => {
+                    horarios = data;
+                    renderCalendar();
+                });
+        }
+
+        function renderVetList() {
+            const vetList = document.getElementById('vetList');
+            vetList.innerHTML = '';
+            veterinarios.forEach((vet, idx) => {
+                const div = document.createElement('div');
+                div.className = 'col-md-4 mb-2';
+                div.innerHTML = `
+                    <div class="vet-list-item card p-2${selectedVet === idx ? ' selected' : ''}" onclick="selectVet(${idx})">
+                        <strong>${vet.nombres || ''} ${vet.apellidos || ''}</strong><br>
+                        <span>${vet.especialidad || 'General'}</span><br>
+                        <span>${vet.email ? `<a href='mailto:${vet.email}'>${vet.email}</a>` : 'Sin email'}</span><br>
+                        <span>${vet.celular ? `<a href='tel:${vet.celular}'>${vet.celular}</a>` : 'Sin teléfono'}</span>
+                    </div>
+                `;
+                vetList.appendChild(div);
+            });
+        }
+
+        function selectVet(idx) {
+            selectedVet = idx;
+            renderVetList();
+            const vet = veterinarios[idx];
+            document.getElementById('selectedVetName').textContent = (vet.nombres || '') + ' ' + (vet.apellidos || '');
+            fetchHorarios(vet.id);
+        }
+
+        function normalizeDay(day) {
+            return day ? day.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '';
+        }
+        function normalizeHour(h) {
+            if (!h) return '';
+            let [hh, mm] = h.split(':');
+            if (hh.length === 1) hh = '0' + hh;
+            return hh + ':' + mm;
+        }
+
+        function renderCalendar() {
+            const calendarBody = document.getElementById('calendarBody');
+            calendarBody.innerHTML = '';
+            // Map horarios by normalized day
+            const horarioMap = {};
+            horarios.forEach(h => {
+                const normDay = normalizeDay(h.dia_semana);
+                if (!horarioMap[normDay]) horarioMap[normDay] = [];
+                horarioMap[normDay].push({
+                    inicio: normalizeHour(h.hora_inicio),
+                    fin: normalizeHour(h.hora_fin)
+                });
+            });
+            // Debug prints
+            console.log('horarioMap:', horarioMap);
+            console.log('normalizedDays:', normalizedDays);
+            console.log('horarios:', horarios);
+            let hasHorario = horarios.length > 0;
+            for (let hour of hours) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td class='calendar-hour'>${hour}</td>`;
+                for (let i = 0; i < days.length; i++) {
+                    const normDay = normalizedDays[i];
+                    let matchCount = 0;
+                    if (horarioMap[normDay]) {
+                        for (let h of horarioMap[normDay]) {
+                            // Debug print for hour comparison
+                            console.log('Comparing:', {hour, inicio: h.inicio, fin: h.fin});
+                            if (hour >= h.inicio && hour < h.fin) {
+                                matchCount++;
+                            }
+                        }
+                    }
+                    if (matchCount > 0) {
+                        tr.innerHTML += `<td class=\"calendar-active\" style=\"background-color: ${matchCount > 1 ? '#0a58ca' : '#0d6efd'}\"></td>`;
+                    } else {
+                        tr.innerHTML += `<td></td>`;
+                    }
+                }
+                calendarBody.appendChild(tr);
+            }
+            document.getElementById('noHorarioMsg').style.display = hasHorario ? 'none' : '';
+        }
+
+        window.selectVet = selectVet;
+        document.addEventListener('DOMContentLoaded', fetchVeterinarios);
+    </script>
+</div>
+</body>
+</html> 

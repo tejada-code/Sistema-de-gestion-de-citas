@@ -1,0 +1,89 @@
+<html layout:decorate="_layoutDueno">
+    <head>
+        <title>Dashboard - Dueño</title>
+    </head>
+    <body>
+        <div layout:fragment="content">
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-12">
+                        <h2>Dueño de Mascota</h2>
+                        <p class="lead">Bienvenido al panel de control para dueños de mascotas</p>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="icon-pet" style="font-size: 3rem; color: #28a745;"></i>
+                                <h5 class="card-title mt-2">Mis Mascotas</h5>
+                                <p class="card-text">Gestiona la información de tus mascotas</p>
+                                <a href="/dueno/mascotas" class="btn btn-primary">Ver Mascotas</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="icon-calendar" style="font-size: 3rem; color: #007bff;"></i>
+                                <h5 class="card-title mt-2">Mis Citas</h5>
+                                <p class="card-text">Revisa y agenda citas para tus mascotas</p>
+                                <a href="/dueno/citas" class="btn btn-primary">Ver Citas</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="icon-file-text" style="font-size: 3rem; color: #17a2b8;"></i>
+                                <h5 class="card-title mt-2">Historial Médico</h5>
+                                <p class="card-text">Consulta el historial médico de tus mascotas</p>
+                                <a href="/dueno/historial" class="btn btn-primary">Ver Historial</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="icon-credit-card" style="font-size: 3rem; color: #ffc107;"></i>
+                                <h5 class="card-title mt-2">Mis Pagos</h5>
+                                <p class="card-text">Revisa el estado de tus pagos</p>
+                                <a href="/dueno/pagos" class="btn btn-primary">Ver Pagos</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Próximas Citas</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">No tienes citas programadas próximamente.</p>
+                                <a href="/dueno/citas" class="btn btn-outline-primary">Agendar Cita</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Mascotas Registradas</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">No tienes mascotas registradas.</p>
+                                <a href="/dueno/mascotas" class="btn btn-outline-primary">Registrar Mascota</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html> 

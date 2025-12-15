@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html layout:decorate="_layoutAdministrador">
+    <head>
+        <title>UTP Integrador</title>        
+    </head>
+
+    <body>
+        <div layout:fragment="content">
+            <form id="formularioValidacionClinica" name="formularioValidacionClinica" method="POST" action="dashboard.html">
+                <div id="panel-datos-basicos">
+
+
+                    <div class="container mt-4 px-5">
+                        <div class="p-3 text-dark rounded" style="background-color: #B4B4B4;">
+                            <h1>Validar los datos de la clínica veterinaria</h1>
+                            <h2>Datos de la clínica veterinaria</h2>
+                            <div class="mb-3">
+                                <label for="nombre-clinica" class="form-label">Nombre de la clínica veterinaria</label>
+                                <input readonly id="nombre-clinica" class="form-control" type="text" v-model="entidades.clinica_veterinaria.nombre">
+                                <span id="error-nombre-clinica" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ruc" class="form-label">R.U.C</label>
+                                <input readonly id="ruc" class="form-control"type="text" v-model="entidades.clinica_veterinaria.ruc">
+                                <span id="error-ruc" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="direccion-sede-principal" class="form-label">Dirección de la sede principal</label>
+                                <input readonly id="direccion-sede-principal" class="form-control" type="text" v-model="entidades.clinica_veterinaria.direccion_sede">
+                                <span id="error-direccion-sede-principal" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="link-web" class="form-label">Link de una red social o página web de la clínica veterinaria</label>
+                                <input readonly id="link-web" class="form-control" type="text" v-model="entidades.clinica_veterinaria.link_web">
+                                <span id="error-link-web" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="telefono-sede" class="form-label">Teléfono de la sede principal</label>
+                                <input readonly id="telefono-sede" class="form-control" type="tel" v-model="entidades.clinica_veterinaria.telefono_sede">
+                                <span id="error-telefono-sede" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="container mt-4  px-5">
+                        <div class="p-3 text-dark rounded" style="background-color: #B4B4B4;">
+                            <h2>Datos del médico responsable</h2>
+                            <div class="mb-3">
+                                <label for="nombres-medico" class="form-label">Nombres</label>
+                                <input readonly id="nombres-medico" class="form-control" type="text" v-model="entidades.veterinario.nombres">
+                                <span id="error-nombres-medico" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="apellidos-medico" class="form-label">Apellidos</label>
+                                <input readonly id="apellidos-medico" class="form-control" type="text" v-model="entidades.veterinario.apellidos">
+                                <span id="error-apellidos-medico" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="dni-medico" class="form-label">D.N.I</label>
+                                <input readonly id="dni-medico" class="form-control" type="text" v-model="entidades.veterinario.dni">
+                                <span id="error-dni-medico" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="nacimiento-medico" class="form-label">Fecha de nacimiento</label>
+                                <input readonly id="nacimiento-medico" class="form-control" type="date" placeholder="dd/mm/yyyy" v-model="entidades.veterinario.nacimiento">
+                                <span id="error-nacimiento-medico" class="text-danger"></span>
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label for="celular-medico" class="form-label">Celular</label>
+                                <input readonly id="celular-medico" class="form-control" type="tel" v-model="entidades.veterinario.celular">
+                                <span id="error-celular-medico" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="colegio-medico" class="form-label">Número de Colegio Médico Veterinario</label>
+                                <input readonly id="colegio-medico" class="form-control" type="text" v-model="entidades.veterinario.colegio_medico">
+                                <span id="error-colegio-medico" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="correo-medico" class="form-label">Correo electrónico</label>
+                                <input readonly id="correo-medico" class="form-control" type="email" v-model="entidades.cuenta.correo">
+                                <span id="error-correo-medico" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="container mt-4  px-5">
+                        <div class="p-3 text-dark rounded" style="background-color: #B4B4B4;">
+                            <h2 class="text-center">Configuración de la cuenta</h2>
+                            <p>El médico veterinario representante deberá ingresar con un correo y contraseña para administrar la cuenta de la clínica veterinaria.</p>                        
+                            <div class="mb-3">
+                                <label for="contraseña" class="form-label">Contraseña</label>
+                                <input readonly id="contraseña" class="form-control" type="password" v-model="entidades.cuenta.contraseña">
+                                <span id="error-contraseña" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="repetir-contraseña" class="form-label">Repetir contraseña</label>
+                                <input readonly id="repetir-contraseña" class="form-control" type="password" v-model="entidades.cuenta.repetir_contraseña">
+                                <span id="error-repetir-contraseña" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container mt-4 px-5 d-flex justify-content-between">
+                        <a href="/" class="btn btn-secondary">Regresar</a>
+                        <button type="button" id="btn-cambiar-panel-planes" class="btn btn-primary mt-3">Seleccionar Plan de Suscripción</button>
+                    </div>
+                </div>
+
+
+
+
+                <div id="panel-planes" class="container mt-4 px-5 d-none">
+                    <div class="p-3 text-dark rounded" style="background-color: #B4B4B4;">
+                        <h2 class="text-center">Seleccione su Plan de Suscripción</h2>						
+                        <div class="mb-3">							
+                            <ul class="list-group gap-5">
+
+                                <div class="card list-group-item">
+                                    <div class="card-header">
+                                        <h2>Básico</h2>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Características</h5>
+                                        <p class="card-text">El plan básico incluye</p>
+                                        <div class="text-end">
+                                            <button type="button" id="btn-plan-basico-cambiar-panel-pasarelas" class="btn btn-primary mt-3" @click="entidades.clinica_veterinaria.plan_suscripcion = 'básico';">Seleccionar</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card list-group-item">
+                                    <div class="card-header">
+                                        <h2>Profesional</h2>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Características</h5>
+                                        <p class="card-text">El plan profesional incluye</p>
+                                        <div class="text-end">
+                                            <button type="button" id="btn-plan-profesional-cambiar-panel-pasarelas" class="btn btn-primary mt-3" @click="entidades.clinica_veterinaria.plan_suscripcion = 'profesional';">Seleccionar</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card list-group-item">
+                                    <div class="card-header">
+                                        <h2>Premium</h2>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Características</h5>
+                                        <p class="card-text">El plan premium incluye</p>
+                                        <div class="text-end">
+                                            <button type="button" id="btn-plan-premium-cambiar-panel-pasarelas" class="btn btn-primary mt-3" @click="entidades.clinica_veterinaria.plan_suscripcion = 'premium';">Seleccionar</button>
+                                        </div>
+                                    </div>
+                                </div>															
+                            </ul>
+                            <div class="container mt-4 px-5 d-flex justify-content-between">
+                                <button type="button" id="btn-regresar-panel-datos-basicos" class="btn btn-secondary">Regresar</button>														
+                            </div>
+                        </div>
+                    </div>					
+                </div>													
+
+                <div id="panel-pasarelas" class="container mt-4 px-5 d-none">
+                    <div class="p-3 text-dark rounded" style="background-color: #B4B4B4;">                     
+                        <h2 class="text-center">Seleccione una Pasarela de Pago</h2>   
+
+                        <div class="mb-3">			
+                            <ul class="list-group gap-5">
+
+                                <div class="card list-group-item">
+                                    <div class="card-header">
+                                        <h2>Pasarela de Pago A</h2>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">Paga la suscripción a traves de </p>
+                                        <!--
+                                        <input type="submit" class="btn btn-primary mt-3" value="Izipay" v-model="entidades.clinica_veterinaria.pasarela_pago">
+                                        -->
+                                        <input type="submit" class="btn btn-primary mt-3" :value="entidades.clinica_veterinaria.pasarela_pago || 'Izipay'">
+                                    </div>
+                                </div>
+
+                                <div class="card list-group-item">
+                                    <div class="card-header">
+                                        <h2>Pasarela de Pago B</h2>
+                                    </div>
+                                    <div class="card-body">										
+                                        <p class="card-text">Paga la suscripción a traves de </p>
+                                        <!--
+                                        <input type="submit" class="btn btn-primary mt-3" value="Culqui" v-model="entidades.clinica_veterinaria.pasarela_pago">
+                                        -->
+                                        <input type="submit" class="btn btn-primary mt-3" :value="entidades.clinica_veterinaria.pasarela_pago || 'Culqui'">
+                                    </div>
+                                </div>
+
+                                <div class="card list-group-item">
+                                    <div class="card-header">
+                                        <h2>Pasarela de Pago C</h2>
+                                    </div>
+                                    <div class="card-body">										
+                                        <p class="card-text">Paga la suscripción a traves de </p>
+                                        <!--
+                                        <input type="submit" class="btn btn-primary mt-3" value="Niubiz" v-model="entidades.clinica_veterinaria.pasarela_pago">										
+                                        -->
+                                        <input type="submit" class="btn btn-primary mt-3" :value="entidades.clinica_veterinaria.pasarela_pago || 'Niubiz'">
+
+                                    </div>
+                                </div>															
+                            </ul>
+                            <div class="container mt-4 px-5 d-flex justify-content-between">			
+                                <button type="button" id="btn-regresar-panel-planes" class="btn btn-secondary" @click='mostrar();'>Regresar</button>			
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+        <script layout:fragment="script">
+
+            new Vue({
+                el: "#app",
+                data: {
+                    entidades: {
+                        clinica_veterinaria: {
+                            nombre: "",
+                            ruc: "",
+                            direccion_sede_principal: "",
+                            link_web: "",
+                            telefono_sede: "",
+                            plan_suscripcion: "",
+                            pasarela_pago: ""
+                        },
+                        veterinario: {
+                            nombres: "",
+                            apellidos: "",
+                            dni: "",
+                            nacimiento: "",
+                            celular: "",
+                            colegio_medico: ""
+                        },
+                        cuenta: {
+                            correo: "",
+                            contraseña: "",
+                            repetir_contraseña: "",
+                            fecha_creacion: ""
+                        }
+                    },
+                    entidad: []
+                },
+                methods: {
+                    guardar: function () {
+                        this.$http.post('/api/clinicaVeterinaria', this.entidades.clinica_veterinaria).
+                                then(() => alert("Datos de la clínica veterinaria guardados con éxito")).
+                                catch(err => {
+                                    console.error("Error:", err);
+                                });
+                        this.$http.post('/api/Veterinario', this.entidades.veterinario).
+                                then(() => alert("Datos del médico responsable guardados con éxito")).
+                                catch(err => {
+                                    console.error("Error:", err);
+                                });
+
+
+                        this.entidades.cuenta.fecha_creacion = new Date().toISOString();
+                        this.$http.post('/api/sesion', this.entidades.cuenta).
+                                then(() => alert("Datos de la cuenta guardados con éxito")).
+                                catch(err => {
+                                    console.error("Error:", err);
+                                });
+                    },
+                    mostrar: function () {
+                        console.log(entidades);
+                    }
+                },
+                mounted: function () {
+
+                }
+            });
+
+
+            /* Campos para los siguientes inputs:
+             ruc
+             direccion-sede-principal
+             link-web
+             telefono-sede
+             nombres-medico
+             apellidos-medico
+             dni-medico
+             nacimiento-medico
+             celular-medico
+             colegio-medico
+             correo-medico
+             contraseña
+             repetir-contraseña
+             */
+            const campos = [
+                // Se pueden agregar más campos para validar, revisar regex en https://regex101.com/
+                {
+                    idInput: "nombre-clinica",
+                    idError: "error-nombre-clinica",
+                    mensaje: "El nombre de la clínica veterinaria es inválido",
+                    regex: /^[^'";]{3,50}$/
+                },
+                {
+                    idInput: "ruc",
+                    idError: "error-ruc",
+                    mensaje: "El número de R.U.C de la clínica veterinaria es inválido.",
+                    regex: /^[20][0-9]{11,11}$/
+                },
+                {
+                    idInput: "direccion-sede-principal",
+                    idError: "error-direccion-sede-principal",
+                    mensaje: "La dirección de la sede de la clínica veterinaria es inválida.",
+                    regex: /^[a-zA-Zá-úÁ-Ú0-9\s.,°#\-&]{5,100}$/
+                },
+                {
+                    idInput: "link-web",
+                    idError: "error-link-web",
+                    mensaje: "La dirección URL de la clínica veterinaria es inválida.",
+                    regex: /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/ // https://uibakery.io/regex-library/url
+                },
+                {
+                    idInput: "telefono-sede",
+                    idError: "error-telefono-sede",
+                    mensaje: "El número de teléfono de la sede es inválido.",
+                    regex: /^[0-9]{8,8}$/
+                },
+                {
+                    idInput: "nombres-medico",
+                    idError: "error-nombres-medico",
+                    mensaje: "Los nombres del médico responsable son inválidos.",
+                    regex: /^[a-zA-Zá-úÁ-Ú\s]{3,50}$/
+                },
+                {
+                    idInput: "apellidos-medico",
+                    idError: "error-apellidos-medico",
+                    mensaje: "los apellidos del médico responsable son inválidos.",
+                    regex: /^[a-zA-Zá-úÁ-Ú\s]{3,50}$/
+                }
+                ,
+                {
+                    idInput: "dni-medico",
+                    idError: "error-dni-medico",
+                    mensaje: "El número de D.N.I del médico responsable es inválido.",
+                    regex: /^[0-9]{8,8}$/
+                },
+                {
+                    idInput: "nacimiento-medico",
+                    idError: "error-nacimiento-medico",
+                    mensaje: "La fecha de nacimiento del médico responsable es inválida.",
+                    regex: /^[^'";]{3,50}$/ // /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/(19\d{2}|20[0-2]\d)$/
+                },
+                {
+                    idInput: "celular-medico",
+                    idError: "error-celular-medico",
+                    mensaje: "El número de celular del médico responsbale es inválido.",
+                    regex: /^[9][0-9]{8,8}$/
+                },
+                {
+                    idInput: "colegio-medico",
+                    idError: "error-colegio-medico",
+                    mensaje: "El número de colegio médico (CMVP) del médico responsable es inválido.",
+                    regex: /^\d{1,5}$/
+                },
+                {
+                    idInput: "correo-medico",
+                    idError: "error-correo-medico",
+                    mensaje: "El correo del médico responsable es inválido.",
+                    regex: /^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/ // https://saturncloud.io/blog/how-can-i-validate-an-email-address-using-a-regular-expression/
+                },
+                {
+                    idInput: "contraseña",
+                    idError: "error-contraseña",
+                    mensaje: "La contraseña es inválida.",
+                    regex: /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/ // https://ihateregex.io/expr/password/
+                },
+                {
+                    idInput: "repetir-contraseña",
+                    idError: "error-repetir-contraseña",
+                    mensaje: "La contraseña es inválida.",
+                    regex: /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/ // https://ihateregex.io/expr/password/
+                }
+                // Se pueden agregar más campos para validar, revisar regex en https://regex101.com/
+            ];
+
+/*
+            function validarCoincidenciaContraseñas() {
+                const contraseña = document.getElementById("contraseña").value.trim();
+                const repetirContraseña = document.getElementById("repetir-contraseña").value.trim();
+                const error = document.getElementById("error-repetir-contraseña");
+
+                if (contraseña !== repetirContraseña) {
+                    error.textContent = "Las contraseñas no coinciden.";
+                    error.style.display = "block";
+                    return false;
+                } else {
+                    // Solo ocultamos el error si ya pasó la validación de formato también
+                    if (error.textContent === "Las contraseñas no coinciden.") {
+                        error.style.display = "none";
+                    }
+                    return true;
+                }
+            }
+*/
+
+
+            function validarCampo(campo) {
+                const input = document.getElementById(campo.idInput);
+                const error = document.getElementById(campo.idError);
+                const valor = input.value.trim();
+                if (valor === "" || !campo.regex.test(valor)) {
+                    error.textContent = campo.mensaje;
+                    error.style.display = "block";
+                    return false;
+                } else {
+                    error.style.display = "none";
+                    return true;
+                }
+            }
+     
+ 
+
+            campos.forEach(campo => {
+                const input = document.getElementById(campo.idInput);
+                input.addEventListener("input", () => validarCampo(campo));
+            });
+            document.getElementById("formularioValidacionClinica").addEventListener("submit", function (event) {
+                let esValido = true;
+                campos.forEach(campo => {
+                    if (!validarCampo(campo)) {
+                        esValido = false;
+                    }
+                });
+
+/*
+                if (!validarCoincidenciaContraseñas()) {
+                    esValido = false;
+                }
+*/        
+ 
+                
+                if (!esValido) {
+                    event.preventDefault();
+                }
+            });
+
+<!-- empieza la configuración de pantallas -->
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const cambiarPanel = (idOcultar, idMostrar) => {
+                    document.getElementById(idOcultar).classList.add('d-none');
+                    document.getElementById(idMostrar).classList.remove('d-none');
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            window.scrollTo({top: 0, behavior: 'smooth'});
+                        });
+                    });
+                };
+
+                document.getElementById('btn-cambiar-panel-planes').addEventListener('click', () => {
+                    let esValido = true;
+                    let primerCampoInvalido = null;
+
+                    campos.forEach(campo => {
+                        const input = document.getElementById(campo.idInput);
+                        esValido = validarCampo(campo);
+                        if (esValido === false && primerCampoInvalido === null && input !== null) {
+                            primerCampoInvalido = input;
+                        }
+                    });
+
+                    if (esValido) {
+                        cambiarPanel('panel-datos-basicos', 'panel-planes');
+                    } else if (primerCampoInvalido !== null) {
+                        primerCampoInvalido.scrollIntoView({behavior: "smooth", block: "center"});
+                        primerCampoInvalido.focus();
+                    }
+                });
+
+                document.getElementById('btn-regresar-panel-datos-basicos').addEventListener('click', () => {
+                    cambiarPanel('panel-planes', 'panel-datos-basicos');
+                });
+
+                document.getElementById('btn-plan-basico-cambiar-panel-pasarelas').addEventListener('click', () => {
+                    cambiarPanel('panel-planes', 'panel-pasarelas');
+                });
+                document.getElementById('btn-plan-profesional-cambiar-panel-pasarelas').addEventListener('click', () => {
+                    cambiarPanel('panel-planes', 'panel-pasarelas');
+                });
+                document.getElementById('btn-plan-premium-cambiar-panel-pasarelas').addEventListener('click', () => {
+                    cambiarPanel('panel-planes', 'panel-pasarelas');
+                });
+
+                document.getElementById('btn-regresar-panel-planes').addEventListener('click', () => {
+                    cambiarPanel('panel-pasarelas', 'panel-planes');
+                });
+            });
+
+<!-- termino la configuración de pantallas -->
+
+        </script>            
+
+    </body>				
+</html>

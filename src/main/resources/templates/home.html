@@ -1,0 +1,129 @@
+<html layout:decorate="_layout">
+    <head>
+        <title>UTP Vetges</title>
+        <style>
+            .section {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 60px 0;
+                border-bottom: 1px solid #eee;
+                background: #fff;
+            }
+            .section.reverse {
+                flex-direction: row-reverse;
+                background: #f8f9fa;
+            }
+            .section-content {
+                flex: 1;
+                padding: 0 40px;
+            }
+            .section-image {
+                flex: 1;
+                display: flex;
+                justify-content: center;
+            }
+            .section-image img {
+                max-width: 400px;
+                border-radius: 16px;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            }
+            .main-title {
+                text-align: center;
+                margin-top: 40px;
+                margin-bottom: 40px;
+                font-size: 2.5rem;
+                font-weight: bold;
+                color: #007bff;
+            }
+            .bottom-actions {
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+                margin: 60px 0 30px 0;
+            }
+            @media (max-width: 900px) {
+                .section, .section.reverse {
+                    flex-direction: column !important;
+                }
+                .section-content, .section-image {
+                    padding: 20px 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div layout:fragment="content">
+            <div class="main-title">Bienvenido a VetGes</div>
+
+            <!-- Nuestra Propuesta -->
+            <div class="section">
+                <div class="section-content">
+                    <h2>Nuestra Propuesta</h2>
+                    <p>
+                        VetGes es un sistema web especializado en la gestión de clínicas veterinarias. Nuestra plataforma está diseñada para ayudar a los dueños de clínicas a optimizar la administración de citas, pacientes y personal, facilitando la digitalización de procesos y mejorando la experiencia tanto de clientes como del equipo veterinario.
+                    </p>
+                </div>
+                <div class="section-image">
+                    <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80" alt="Gestión clínica digital">
+                </div>
+            </div>
+
+            <!-- Misión y Visión -->
+            <div class="section reverse">
+                <div class="section-content">
+                    <h2>Misión</h2>
+                    <p>
+                        Brindar a las clínicas veterinarias una solución tecnológica integral que permita gestionar de manera eficiente las citas, la información de pacientes y la atención médica, contribuyendo a la modernización y crecimiento del sector veterinario.
+                    </p>
+                    <h2>Visión</h2>
+                    <p>
+                        Ser la plataforma líder en gestión veterinaria en Latinoamérica, reconocida por su innovación, facilidad de uso y por transformar la manera en que las clínicas veterinarias administran sus servicios y cuidan a sus pacientes.
+                    </p>
+                </div>
+                <div class="section-image">
+                    <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=400&q=80" alt="Misión y Visión VetGes">
+                </div>
+            </div>
+
+            <!-- ¿A quiénes ayudamos? -->
+            <div class="section">
+                <div class="section-content">
+                    <h2>¿A quiénes ayudamos?</h2>
+                    <ul>
+                        <li><b>Clientes de la clínica:</b> Permite reservar citas en línea, registrar y consultar información de sus mascotas, y acceder a su historial de atención desde cualquier dispositivo.</li>
+                        <li><b>Personal administrativo:</b> Facilita la gestión de citas, la visualización de la agenda diaria/semanal y el acceso a la base de datos de clientes y mascotas.</li>
+                        <li><b>Médicos veterinarios:</b> Proporciona acceso rápido a las citas programadas, historial clínico de los pacientes y registro de diagnósticos y observaciones.</li>
+                    </ul>
+                </div>
+                <div class="section-image">
+                    <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80" alt="Usuarios VetGes">
+                </div>
+            </div>
+
+            <!-- Funcionalidades principales -->
+            <div class="section reverse">
+                <div class="section-content">
+                    <h2>Funcionalidades principales</h2>
+                    <ul>
+                        <li>Visualización de horarios disponibles en tiempo real</li>
+                        <li>Reserva y gestión de citas online</li>
+                        <li>Registro y consulta de historial de clientes y mascotas</li>
+                        <li>Panel administrativo intuitivo para el personal de la clínica</li>
+                        <li>Seguridad y protección de datos sensibles</li>
+                        <li>Interfaz amigable y adaptable a cualquier dispositivo</li>
+                    </ul>
+                </div>
+                <div class="section-image">
+                    <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80" alt="Funcionalidades VetGes">
+                </div>
+            </div>
+
+            <!-- Botones de acción al final -->
+            <div class="bottom-actions">
+                <a href="/login" class="btn btn-primary btn-lg">Iniciar Sesión</a>
+                <a href="/register" class="btn btn-outline-primary btn-lg">Registrarse</a>
+            </div>
+        </div>
+    </body>
+</html>

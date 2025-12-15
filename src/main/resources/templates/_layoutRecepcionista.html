@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+    <head>
+        <title>VetGes - Recepcionista</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" href="/iconos/fontello.css">
+        <style>
+            .social-icons a {
+                color: #6c757d !important;
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+            .social-icons a:hover {
+                color: #495057 !important;
+            }
+            .social-icons i {
+                font-size: 1.5rem;
+            }
+            .navbar-brand {
+                color: #fd7e14 !important;
+            }
+            .btn-primary {
+                background-color: #0d6efd;
+                border-color: #0d6efd;
+            }
+            .btn-primary:hover {
+                background-color: #0b5ed7;
+                border-color: #0a58ca;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app" class="container">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <img src="/iconos/LogoVetGes.png" alt="Logo VetGes" style="height: 40px;">
+                    <a class="navbar-brand" href="/recepcionista/dashboard">VetGes - Recepcionista</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/recepcionista/dashboard">Inicio</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/GestionesCitas">Citas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/GestionesPagosCitas">Boletas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/recepcionista/clientes">Gestionar Clientes</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/recepcionista/mascotas">Mascotas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/recepcionista/veterinarios">Veterinarios</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/recepcionista/reportes">Reportes</a>
+                            </li>
+                        </ul>
+                        
+                        <!-- User authentication section -->
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="icon-user"></i> 
+                                    <span th:text="${session.usuario.nombres + ' ' + session.usuario.apellidos}"></span>
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" href="/perfil">Mi Perfil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/logout">Cerrar Sesión</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <div layout:fragment="content">
+
+            </div>
+        </div>
+
+        <footer class="bg-white text-center mt-5 pt-4 border-top">
+            <div class="container">
+                <div class="row justify-content-center mb-3">
+                    <div class="col-md-auto">
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Sobre Nosotros</a>
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Compañía</a>
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Clínica</a>
+                        <img src="/iconos/LogoVetGes.png" alt="Logo VetGes" style="height: 30px;">
+                        <span class="fw-bold fs-5 align-middle">VetGes</span>
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Ayuda al cliente</a>
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Recomendaciones</a>
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Recursos</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center mb-2 social-icons">
+                    <span class="mx-2">
+                        <a href="https://wa.me/51906055403?text=Buenas%20tardes%2C%20me%20gustar%C3%ADa%20saber%20que%20horarios%20est%C3%A1n%20disponibles%20para%20el%20agendamiento%20de%20una%20cita" target="_blank" rel="noopener noreferrer">
+                          <i class="icon-whatsapp"></i>
+                        </a>
+                    </span> 
+                    
+                    <span class="mx-2">
+                        <a href="#">
+                            <i class="icon-instagram"></i>
+                        </a>
+                    </span>
+
+                    <span class="mx-2">
+                        <a href="#">
+                        <i class="icon-facebook"></i>
+                        </a>
+                    </span>
+
+                    <span class="mx-2">
+                        <a href="#">
+                            <i class="icon-twitter"></i>
+                        </a>
+                    </span>
+                    
+                </div>
+                <div class="pb-3 text-muted small">
+                    © RegistroClínico, Nosotros amamos nuestros clientes
+                </div>
+            </div>
+        </footer>
+
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.6.1/vue-resource.min.js" integrity="sha512-NuUIe6TWdEivPTcxnihx2e6r2xQFEFPrJfpdZWoBwZF6G51Rphcf5r/1ZU/ytj4lyHwLd/YGMix4a5LqAN15XA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script layout:fragment="script">
+
+        </script>
+    </body>
+
+    <script th:inline="javascript">
+        // Make citasHoy and selectedCitaId globally available for all pages using this layout
+        window.citasHoy = /*[[${citasHoy}]]*/ [];
+        window.selectedCitaId = null;
+        
+        // Make editCita globally available for the Editar button in the cita details modal
+        window.editCita = function() {
+            if (window.selectedCitaId) {
+                window.location.href = '/GestionesCitas?citaId=' + window.selectedCitaId;
+            } else {
+                alert('No hay cita seleccionada para editar');
+            }
+        };
+        
+        // Veterinarians and Citas data from server
+        const veterinarios = /*[[${veterinariosDTO}]]*/ [];
+        const citasHoy = /*[[${citasHoy}]]*/ [];
+        
+        let currentVeterinarioIndex = 0;
+        const veterinariosPerPage = 4;
+        
+        // Debug logging
+        console.log('Veterinarios data:', veterinarios);
+        console.log('Citas hoy data:', citasHoy);
+        
+        // Initialize veterinarians carousel SOLO SI EXISTE EL CONTENEDOR Y VETERINARIOS ES UN ARREGLO
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('veterinariosContainer') && Array.isArray(veterinarios)) {
+                console.log('DOM loaded, loading veterinarians...');
+                loadVeterinarios();
+            }
+        });
+        
+        function loadVeterinarios() {
+            const container = document.getElementById('veterinariosContainer');
+            const counter = document.getElementById('veterinariosCounter');
+            
+            if (!container || !Array.isArray(veterinarios)) {
+                return;
+            }
+            
+            console.log('Loading veterinarians...');
+            console.log('Container:', container);
+            // Fix: Ensure veterinarios is always an array
+            if (!Array.isArray(veterinarios)) {
+                console.warn('Veterinarios was not an array, initializing as empty array.');
+                window.veterinarios = [];
+            }
+            console.log('Veterinarios length:', veterinarios.length);
+            
+            // If no veterinarians data or empty array
+            if (!veterinarios || veterinarios.length === 0) {
+                console.log('No veterinarians data');
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            for (let i = 0; i < veterinariosPerPage; i++) {
+                const index = currentVeterinarioIndex + i;
+                if (index < veterinarios.length) {
+                    const veterinario = veterinarios[index];
+                    console.log('Creating card for veterinarian:', veterinario);
+                    const card = createVeterinarioCard(veterinario);
+                    container.appendChild(card);
+                }
+            }
+            
+            // Update counter
+            if (counter) {
+                const start = currentVeterinarioIndex + 1;
+                const end = Math.min(currentVeterinarioIndex + veterinariosPerPage, veterinarios.length);
+                counter.textContent = `Mostrando ${start}-${end} de ${veterinarios.length} veterinarios`;
+            }
+        }
+        
+        function createVeterinarioCard(veterinario) {
+            const col = document.createElement('div');
+            col.className = 'col-md-6 mb-2';
+            
+            // Check if veterinario has the expected structure (VeterinarioDTO)
+            if (!veterinario) {
+                console.error('Invalid veterinario data:', veterinario);
+                return col;
+            }
+            
+            col.innerHTML = `
+                <div class="card veterinario-card h-100">
+                    <div class="card-body p-2">
+                        <h6 class="card-title mb-1">${veterinario.nombres || ''} ${veterinario.apellidos || ''}</h6>
+                        <small class="text-muted d-block">${veterinario.especialidad || 'Sin especialidad'}</small>
+                        <small class="text-muted d-block">${veterinario.email || 'Sin email'}</small>
+                        <small class="text-primary">${veterinario.celular || 'Sin teléfono'}</small>
+                    </div>
+                </div>
+            `;
+            
+            return col;
+        }
+        
+        // Make navigation functions global
+        window.previousVeterinarios = function() {
+            if (currentVeterinarioIndex > 0) {
+                currentVeterinarioIndex -= veterinariosPerPage;
+                if (currentVeterinarioIndex < 0) currentVeterinarioIndex = 0;
+                loadVeterinarios();
+            }
+        }
+        
+        window.nextVeterinarios = function() {
+            if (currentVeterinarioIndex + veterinariosPerPage < veterinarios.length) {
+                currentVeterinarioIndex += veterinariosPerPage;
+                loadVeterinarios();
+            }
+        }
+        
+        function showCitaDetails(citaId) {
+            console.log('Layout showCitaDetails called with citaId:', citaId);
+            console.log('Available citas:', window.citasHoy);
+            
+            // Use the global citasHoy from the dashboard
+            const cita = window.citasHoy ? window.citasHoy.find(c => c.id == citaId) : null;
+            console.log('Found cita:', cita);
+            
+            if (!cita) {
+                console.error('Cita not found with id:', citaId);
+                alert('No se pudo encontrar la información de la cita');
+                return;
+            }
+            
+            // Set the selected cita ID for the edit function
+            window.selectedCitaId = citaId;
+            
+            const modalElement = document.getElementById('citaDetailsModal');
+            const content = document.getElementById('citaDetailsContent');
+            
+            if (!modalElement) {
+                console.error('Modal element not found');
+                alert('Error: Modal element not found');
+                return;
+            }
+            
+            const modal = new bootstrap.Modal(modalElement);
+            
+            const estadoClass =
+                cita.estado === 'Completada' ? 'badge bg-success' :
+                cita.estado === 'Cancelada' ? 'badge bg-danger' :
+                cita.estado === 'En proceso' ? 'badge bg-warning' :
+                cita.estado === 'Pendiente' ? 'badge bg-secondary' :
+                'badge bg-warning';
+            
+            content.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Información del Cliente</h6>
+                        <p><strong>Nombre:</strong> ${cita.dueno?.usuario?.nombres || ''} ${cita.dueno?.usuario?.apellidos || ''}</p>
+                        <p><strong>DNI:</strong> ${cita.dueno?.usuario?.dni || 'N/A'}</p>
+                        <p><strong>Teléfono:</strong> ${cita.dueno?.usuario?.telefono || 'N/A'}</p>
+                        <p><strong>Email:</strong> ${cita.dueno?.usuario?.email || 'N/A'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Información de la Cita</h6>
+                        <p><strong>Fecha:</strong> ${cita.fecha || 'N/A'}</p>
+                        <p><strong>Hora:</strong> ${cita.hora || 'N/A'}</p>
+                        <p><strong>Estado:</strong> 
+                            <span class="${estadoClass}">${cita.estado || 'N/A'}</span>
+                        </p>
+                        <p><strong>Veterinario:</strong> ${cita.veterinario?.usuario?.nombres || ''} ${cita.veterinario?.usuario?.apellidos || ''}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Información de la Mascota</h6>
+                        ${cita.mascota ? `
+                            <p><strong>Nombre:</strong> ${cita.mascota.nombre || 'N/A'}</p>
+                            <p><strong>Especie:</strong> ${cita.mascota.especie || 'N/A'}</p>
+                            <p><strong>Raza:</strong> ${cita.mascota.raza || 'N/A'}</p>
+                            <p><strong>Edad:</strong> ${cita.mascota.edad || 'N/A'} años</p>
+                        ` : '<p><em>No hay mascota registrada para esta cita</em></p>'}
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Observaciones</h6>
+                        ${cita.observaciones && cita.observaciones.trim() !== '' ? 
+                            `<p>${cita.observaciones}</p>` : 
+                            '<p><em>No hay observaciones registradas para esta cita</em></p>'}
+                    </div>
+                </div>
+            `;
+            
+            modal.show();
+        }
+    </script>
+</html>

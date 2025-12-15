@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html layout:decorate="_layoutRecepcionista" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Mascotas - VetGes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div layout:fragment="content">
+    <div id="appMascotas" class="container mt-4">
+        <h2>Mascotas</h2>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <input type="text" class="form-control" v-model="filtro" placeholder="Buscar por nombre de mascota..." @keyup.enter="aplicarFiltro">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" @click="aplicarFiltro">Filtrar</button>
+            </div>
+        </div>
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Especie</th>
+                    <th>Raza</th>
+                    <th>Edad</th>
+                    <th>Dueño</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="mascota in mascotasFiltradas" :key="mascota.id">
+                    <td>{{ mascota.nombre }}</td>
+                    <td>{{ mascota.especie }}</td>
+                    <td>{{ mascota.raza }}</td>
+                    <td>{{ mascota.edad }}</td>
+                    <td>{{ getNombreDueno(mascota.dueno) }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div v-if="mascotasFiltradas.length === 0" class="alert alert-warning">No se encontraron mascotas.</div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.6.1/vue-resource.min.js"></script>
+<script>
+new Vue({
+    el: '#appMascotas',
+    data: {
+        mascotas: [],
+        duenos: [],
+        filtro: ''
+    },
+    computed: {
+        mascotasFiltradas() {
+            if (!this.filtro.trim()) return this.mascotas;
+            const f = this.filtro.toLowerCase();
+            return this.mascotas.filter(m =>
+                m.nombre && m.nombre.toLowerCase().includes(f)
+            );
+        }
+    },
+    methods: {
+        getNombreDueno(dueno) {
+            if (!dueno || !dueno.usuario) return '';
+            return dueno.usuario.nombres + ' ' + dueno.usuario.apellidos;
+        },
+        aplicarFiltro() {
+            // No es necesario si usas computed, pero puedes recargar aquí si quieres
+        }
+    },
+    mounted() {
+        this.$http.get('/api/Mascota').then(resp => this.mascotas = resp.data);
+        this.$http.get('/api/Dueno').then(resp => this.duenos = resp.data);
+    }
+});
+</script>
+</body>
+</html> 

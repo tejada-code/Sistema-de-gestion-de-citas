@@ -1,0 +1,174 @@
+<html layout:decorate="_layout">
+    <head>
+        <title>Registro - UTP VetGes</title>
+    </head>
+    <body>
+        <div layout:fragment="content">
+            <div class="container mt-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header text-center">
+                                <h3>Registro de Usuario</h3>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${error}" class="alert alert-danger" role="alert">
+                                    <span th:text="${error}"></span>
+                                </div>
+                                
+                                <form th:action="@{/register}" method="post">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="nombres" class="form-label">Nombres</label>
+                                                <input type="text" class="form-control" id="nombres" name="nombres" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="apellidos" class="form-label">Apellidos</label>
+                                                <input type="text" class="form-control" id="apellidos" name="apellidos" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="dni" class="form-label">DNI</label>
+                                                <input type="text" class="form-control" id="dni" name="dni" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="celular" class="form-label">Celular</label>
+                                                <input type="text" class="form-control" id="celular" name="celular" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="email" class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="email" name="email" required>
+                                                <div class="form-text">
+                                                    El dominio del email determinará tu tipo de usuario:
+                                                    <ul>
+                                                        <li>@dueno.com - Dueño de mascota</li>
+                                                        <li>@veterinario.com - Veterinario</li>
+                                                        <li>@administrador.com - Administrador</li>
+                                                        <li>@recepcionista.com - Recepcionista</li>
+                                                        <li>@gmail.com - Recepcionista (Gmail)</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="password" class="form-label">Contraseña</label>
+                                                <div class="input-group">
+                                                    <input type="password" class="form-control" id="password" name="password" required>
+                                                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('password')">
+                                                        <i class="icon-eye"></i>
+                                                    </button>
+                                                </div>
+                                                <div id="passwordHelp" class="form-text text-danger"></div>
+                                                <div id="passwordRequirements" class="form-text">
+                                                    <ul style="list-style: none; padding-left: 0; margin-bottom: 0;">
+                                                        <li id="req-length" style="color: red;">• Al menos 8 caracteres</li>
+                                                        <li id="req-uppercase" style="color: red;">• Una letra mayúscula</li>
+                                                        <li id="req-lowercase" style="color: red;">• Una letra minúscula</li>
+                                                        <li id="req-number" style="color: red;">• Un número</li>
+                                                        <li id="req-special" style="color: red;">• Un carácter especial</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="repeatPassword" class="form-label">Repetir Contraseña</label>
+                                                <div class="input-group">
+                                                    <input type="password" class="form-control" id="repeatPassword" name="repeatPassword" required>
+                                                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('repeatPassword')">
+                                                        <i class="icon-eye"></i>
+                                                    </button>
+                                                </div>
+                                                <div id="repeatPasswordHelp" class="form-text text-danger"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">Registrarse</button>
+                                    </div>
+                                </form>
+                                
+                                <div class="text-center mt-3">
+                                    <p>¿Ya tienes cuenta? <a th:href="@{/login}">Inicia sesión aquí</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            window.togglePassword = function(id) {
+                const input = document.getElementById(id);
+                input.type = input.type === 'password' ? 'text' : 'password';
+            }
+
+            function validatePasswordStrength(password) {
+                const length = password.length >= 8;
+                const uppercase = /[A-Z]/.test(password);
+                const lowercase = /[a-z]/.test(password);
+                const number = /\d/.test(password);
+                const special = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>\/?]/.test(password);
+
+                document.getElementById('req-length').style.color = length ? 'green' : 'red';
+                document.getElementById('req-uppercase').style.color = uppercase ? 'green' : 'red';
+                document.getElementById('req-lowercase').style.color = lowercase ? 'green' : 'red';
+                document.getElementById('req-number').style.color = number ? 'green' : 'red';
+                document.getElementById('req-special').style.color = special ? 'green' : 'red';
+
+                return length && uppercase && lowercase && number && special;
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('password').addEventListener('input', function() {
+                    const pwd = this.value;
+                    const help = document.getElementById('passwordHelp');
+                    if (!validatePasswordStrength(pwd)) {
+                        help.textContent = 'La contraseña no cumple con todos los requisitos.';
+                    } else {
+                        help.textContent = '';
+                    }
+                });
+
+                document.getElementById('repeatPassword').addEventListener('input', function() {
+                    const pwd = document.getElementById('password').value;
+                    const repeat = this.value;
+                    const help = document.getElementById('repeatPasswordHelp');
+                    if (pwd !== repeat) {
+                        help.textContent = 'Las contraseñas no coinciden.';
+                    } else {
+                        help.textContent = '';
+                    }
+                });
+
+                document.querySelector('form').addEventListener('submit', function(e) {
+                    const pwd = document.getElementById('password').value;
+                    const repeat = document.getElementById('repeatPassword').value;
+                    if (!validatePasswordStrength(pwd)) {
+                        e.preventDefault();
+                        alert('La contraseña no cumple con los requisitos.');
+                    }
+                    if (pwd !== repeat) {
+                        e.preventDefault();
+                        alert('Las contraseñas no coinciden.');
+                    }
+                });
+            });
+            </script>
+        </div>
+    </body>
+</html> 

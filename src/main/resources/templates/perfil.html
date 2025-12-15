@@ -1,0 +1,67 @@
+<html layout:decorate="_layout.html">
+<head>
+    <title>Mi Perfil</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <h2>Mi Perfil</h2>
+        <form method="post" action="/perfil">
+            <div class="mb-3">
+                <label>Nombres</label>
+                <input type="text" class="form-control" name="nombres" th:value="${usuario.nombres}" readonly>
+            </div>
+            <div class="mb-3">
+                <label>Apellidos</label>
+                <input type="text" class="form-control" name="apellidos" th:value="${usuario.apellidos}" readonly>
+            </div>
+            <div class="mb-3">
+                <label>DNI</label>
+                <input type="text" class="form-control" name="dni" th:value="${usuario.dni}" readonly>
+            </div>
+            <div class="mb-3">
+                <label>Celular</label>
+                <input type="text" class="form-control" name="celular" th:value="${usuario.celular}">
+            </div>
+            <div class="mb-3">
+                <label>Email</label>
+                <input type="email" class="form-control" name="email" th:value="${email}">
+            </div>
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+        </form>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">Éxito</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Los datos fueron actualizados exitosamente.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Verificar si hay mensaje de éxito en la sesión
+        document.addEventListener('DOMContentLoaded', function() {
+            const successMessage = /*[[${success}]]*/ null;
+            const urlParams = new URLSearchParams(window.location.search);
+            const successParam = urlParams.get('success');
+            
+            if (successMessage || successParam) {
+                const modal = new bootstrap.Modal(document.getElementById('successModal'));
+                modal.show();
+            }
+        });
+    </script>
+</div>
+</body>
+</html> 

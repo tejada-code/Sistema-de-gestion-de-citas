@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+    <head>
+        <title>VetGes - Dueño</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" href="/iconos/fontello.css">
+        <style>
+            .social-icons a {
+                color: #6c757d !important;
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+            .social-icons a:hover {
+                color: #495057 !important;
+            }
+            .social-icons i {
+                font-size: 1.5rem;
+            }
+            .navbar-brand {
+                color: #28a745 !important;
+            }
+            .btn-primary {
+                background-color: #28a745;
+                border-color: #28a745;
+            }
+            .btn-primary:hover {
+                background-color: #218838;
+                border-color: #1e7e34;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app" class="container">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <img src="/iconos/LogoVetGes.png" alt="Logo VetGes" style="height: 40px;">
+                    <a class="navbar-brand" href="/dueno/dashboard">VetGes - Dueño</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/dueno/dashboard">Inicio</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/dueno/mascotas">Mis Mascotas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/dueno/citas">Mis Citas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/dueno/historial">Historial Médico</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/dueno/pagos">Mis Pagos</a>
+                            </li>
+                        </ul>
+                        
+                        <!-- User authentication section -->
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="icon-user"></i> 
+                                    <span th:text="${session.usuario.nombres + ' ' + session.usuario.apellidos}"></span>
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" href="/perfil">Mi Perfil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/logout">Cerrar Sesión</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <div layout:fragment="content">
+
+            </div>
+        </div>
+
+        <footer class="bg-white text-center mt-5 pt-4 border-top">
+            <div class="container">
+                <div class="row justify-content-center mb-3">
+                    <div class="col-md-auto">
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Sobre Nosotros</a>
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Compañía</a>
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Clínica</a>
+                        <img src="/iconos/LogoVetGes.png" alt="Logo VetGes" style="height: 30px;">
+                        <span class="fw-bold fs-5 align-middle">VetGes</span>
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Ayuda al cliente</a>
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Recomendaciones</a>
+                        <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Recursos</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center mb-2 social-icons">
+                    <span class="mx-2">
+                        <a href="https://wa.me/51906055403?text=Buenas%20tardes%2C%20me%20gustar%C3%ADa%20saber%20que%20horarios%20est%C3%A1n%20disponibles%20para%20el%20agendamiento%20de%20una%20cita" target="_blank" rel="noopener noreferrer">
+                          <i class="icon-whatsapp"></i>
+                        </a>
+                    </span> 
+                    
+                    <span class="mx-2">
+                        <a href="#">
+                            <i class="icon-instagram"></i>
+                        </a>
+                    </span>
+
+                    <span class="mx-2">
+                        <a href="#">
+                        <i class="icon-facebook"></i>
+                        </a>
+                    </span>
+
+                    <span class="mx-2">
+                        <a href="#">
+                            <i class="icon-twitter"></i>
+                        </a>
+                    </span>
+                    
+                </div>
+                <div class="pb-3 text-muted small">
+                    © RegistroClínico, Nosotros amamos nuestros clientes
+                </div>
+            </div>
+        </footer>
+
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.6.1/vue-resource.min.js" integrity="sha512-NuUIe6TWdEivPTcxnihx2e6r2xQFEFPrJfpdZWoBwZF6G51Rphcf5r/1ZU/ytj4lyHwLd/YGMix4a5LqAN15XA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script layout:fragment="script">
+
+        </script>
+    </body>
+</html> 

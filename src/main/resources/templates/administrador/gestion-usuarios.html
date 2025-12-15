@@ -1,0 +1,228 @@
+<html layout:decorate="_layoutAdministrador">
+<head>
+    <title>Gestión de Usuarios</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <h2>Gestión de Usuarios</h2>
+        <!-- Sin formulario de registro -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Lista de Usuarios</span>
+                <input type="text" id="filtroClientes" class="form-control w-25" placeholder="Filtrar usuarios..." />
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombres</th>
+                                <th>Apellidos</th>
+                                <th>DNI</th>
+                                <th>Celular</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientesTbody">
+                            <!-- Usuarios will be rendered here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modales para Ver, Editar y Eliminar Usuario -->
+    <div class="modal fade" id="modalVerUsuario" tabindex="-1" aria-labelledby="modalVerUsuarioLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalVerUsuarioLabel">Información del Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2"><strong>Nombres:</strong> <span id="verNombres"></span></div>
+                    <div class="mb-2"><strong>Apellidos:</strong> <span id="verApellidos"></span></div>
+                    <div class="mb-2"><strong>DNI:</strong> <span id="verDni"></span></div>
+                    <div class="mb-2"><strong>Celular:</strong> <span id="verCelular"></span></div>
+                    <div class="mb-2"><strong>Fecha de Nacimiento:</strong> <span id="verFechaNacimiento"></span></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="modalEditarUsuarioLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarUsuarioLabel">Editar Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditarUsuario">
+                        <input type="hidden" id="editarId">
+                        <div class="mb-3">
+                            <label for="editarNombres" class="form-label">Nombres</label>
+                            <input type="text" class="form-control" id="editarNombres" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarApellidos" class="form-label">Apellidos</label>
+                            <input type="text" class="form-control" id="editarApellidos" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarDni" class="form-label">DNI</label>
+                            <input type="text" class="form-control" id="editarDni" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarCelular" class="form-label">Celular</label>
+                            <input type="text" class="form-control" id="editarCelular" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarFechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="editarFechaNacimiento">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarCambios">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalEliminarUsuario" tabindex="-1" aria-labelledby="modalEliminarUsuarioLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEliminarUsuarioLabel">Eliminar Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar a <span id="eliminarUsuarioNombre"></span>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:inline="javascript">
+        let usuarioAEliminar = null;
+        let usuariosData = [];
+        function fetchClientes() {
+            fetch('/api/duenos')
+                .then(res => res.json())
+                .then(data => {
+                    usuariosData = data;
+                    window.clientes = data;
+                    renderClientes();
+                });
+        }
+        function renderClientes() {
+            const filtro = document.getElementById('filtroClientes').value.toLowerCase();
+            const tbody = document.getElementById('clientesTbody');
+            tbody.innerHTML = '';
+            usuariosData.filter(c =>
+                (c.nombres && c.nombres.toLowerCase().includes(filtro)) ||
+                (c.apellidos && c.apellidos.toLowerCase().includes(filtro)) ||
+                (c.dni && c.dni.toLowerCase().includes(filtro)) ||
+                (c.celular && c.celular.toLowerCase().includes(filtro))
+            ).forEach((c, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${c.nombres}</td>
+                    <td>${c.apellidos}</td>
+                    <td>${c.dni}</td>
+                    <td>${c.celular || ''}</td>
+                    <td>
+                        <button class='btn btn-outline-info btn-sm me-1' onclick='verUsuario(${idx})'>Ver</button>
+                        <button class='btn btn-outline-warning btn-sm me-1' onclick='editarUsuario(${idx})'>Editar</button>
+                        <button class='btn btn-outline-danger btn-sm' onclick='eliminarUsuario(${idx})'>Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('filtroClientes').addEventListener('input', renderClientes);
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchClientes();
+        });
+        // Modal Ver Usuario
+        window.verUsuario = function(idx) {
+            const usuario = usuariosData[idx];
+            if (!usuario) return;
+            document.getElementById('verNombres').textContent = usuario.nombres || '';
+            document.getElementById('verApellidos').textContent = usuario.apellidos || '';
+            document.getElementById('verDni').textContent = usuario.dni || '';
+            document.getElementById('verCelular').textContent = usuario.celular || '';
+            document.getElementById('verFechaNacimiento').textContent = usuario.fecha_nacimiento ? usuario.fecha_nacimiento.split('T')[0] : '';
+            new bootstrap.Modal(document.getElementById('modalVerUsuario')).show();
+        };
+        // Modal Editar Usuario
+        window.editarUsuario = function(idx) {
+            const usuario = usuariosData[idx];
+            if (!usuario) return;
+            document.getElementById('editarId').value = usuario.id;
+            document.getElementById('editarNombres').value = usuario.nombres || '';
+            document.getElementById('editarApellidos').value = usuario.apellidos || '';
+            document.getElementById('editarDni').value = usuario.dni || '';
+            document.getElementById('editarCelular').value = usuario.celular || '';
+            document.getElementById('editarFechaNacimiento').value = usuario.fecha_nacimiento ? usuario.fecha_nacimiento.split('T')[0] : '';
+            new bootstrap.Modal(document.getElementById('modalEditarUsuario')).show();
+        };
+        document.getElementById('btnGuardarCambios').addEventListener('click', function() {
+            const id = document.getElementById('editarId').value;
+            const data = {
+                nombres: document.getElementById('editarNombres').value,
+                apellidos: document.getElementById('editarApellidos').value,
+                dni: document.getElementById('editarDni').value,
+                celular: document.getElementById('editarCelular').value,
+                fecha_nacimiento: document.getElementById('editarFechaNacimiento').value
+            };
+            fetch(`/api/duenos/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(resp => resp.json())
+            .then(result => {
+                if (result.success) {
+                    // Actualiza el usuario en usuariosData directamente
+                    const idx = usuariosData.findIndex(u => u.id == id);
+                    if (idx !== -1) {
+                        usuariosData[idx] = { ...usuariosData[idx], ...result.usuario };
+                    }
+                    renderClientes();
+                    bootstrap.Modal.getInstance(document.getElementById('modalEditarUsuario')).hide();
+                } else {
+                    alert('Error al actualizar usuario');
+                }
+            });
+        });
+        // Modal Eliminar Usuario
+        window.eliminarUsuario = function(idx) {
+            const usuario = usuariosData[idx];
+            if (!usuario) return;
+            usuarioAEliminar = usuario.id;
+            document.getElementById('eliminarUsuarioNombre').textContent = usuario.nombres + ' ' + usuario.apellidos;
+            new bootstrap.Modal(document.getElementById('modalEliminarUsuario')).show();
+        };
+        document.getElementById('btnConfirmarEliminar').addEventListener('click', function() {
+            if (!usuarioAEliminar) return;
+            fetch(`/api/duenos/${usuarioAEliminar}`, { method: 'DELETE' })
+                .then(resp => {
+                    if (resp.ok) {
+                        fetchClientes();
+                        bootstrap.Modal.getInstance(document.getElementById('modalEliminarUsuario')).hide();
+                    } else {
+                        alert('Error al eliminar usuario');
+                    }
+                });
+        });
+    </script>
+</div>
+</body>
+</html> 

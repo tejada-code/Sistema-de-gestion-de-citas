@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html   layout:decorate="_layoutRecepcionista"
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+    <head>
+        <meta   charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>VetGes: Gestión de Pagos de Citas</title>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .payment-card {
+                transition: transform 0.2s;
+            }
+            .payment-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+            .status-badge {
+                font-size: 0.8em;
+            }
+            .payment-method-badge {
+                font-size: 0.75em;
+            }
+            .top-section-spacing > * + * {
+                margin-top: 1rem !important;
+            }
+            .btn-group.w-100 > .btn {
+                padding-top: 0.7rem;
+                padding-bottom: 0.7rem;
+            }
+            .input-group {
+                margin-bottom: 0.7rem;
+            }
+            .btn-outline-primary.text-primary { color: #0d6efd !important; }
+            .badge.bg-purple {
+                background-color: #800080 !important;
+                color: #fff !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div layout:fragment="content">
+            <p></p>
+            <p></p>
+            <h1>Gestión de Pagos de Citas</h1>
+            
+            <!-- Filtros -->
+            <div class="row mb-4">
+                <div class="col-12 top-section-spacing">
+                    <div class="input-group">
+                        <input type="text" class="form-control" v-model="filtro" placeholder="Filtrar por DNI, nombre del dueño, veterinario, motivo de cita, fecha, método de pago..." @keyup.enter="aplicarFiltro">
+                        <button class="btn btn-outline-secondary" @click="aplicarFiltro">Filtrar</button>
+                        <button class="btn btn-outline-danger" @click="limpiarFiltro" v-if="filtro">Limpiar</button>
+                    </div>
+                    <div class="btn-group w-100 d-flex justify-content-center" role="group">
+                        <button class="btn"
+                            :class="ordenFecha === 'desc' ? 'btn-primary text-white' : 'btn-outline-primary text-primary'"
+                            @click="ordenarPorFecha('desc')">
+                            Más reciente
+                        </button>
+                        <button class="btn"
+                            :class="ordenFecha === 'asc' ? 'btn-primary text-white' : 'btn-outline-primary text-primary'"
+                            @click="ordenarPorFecha('asc')">
+                            Más antigua
+                        </button>
+                    </div>
+                    <div class="btn-group w-100 d-flex justify-content-center" role="group">
+                        <button class="btn"
+                            :class="mostrarPendientes ? 'btn-warning text-white' : 'btn-outline-primary text-primary'"
+                            @click="mostrarPendientes = true">
+                            Citas Pendientes de Pago <span class="badge bg-warning ms-2">{{ citasPendientes.length }}</span>
+                        </button>
+                        <button class="btn"
+                            :class="!mostrarPendientes ? 'btn-warning text-white' : 'btn-outline-primary text-primary'"
+                            @click="mostrarPendientes = false">
+                            Pagos Realizados <span class="badge bg-success ms-2">{{ citasPagadas.length }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Citas Pendientes -->
+            <table class="table mt-3" v-if="mostrarPendientes">
+                <thead>
+                    <tr>
+                        <th>Dueño</th>
+                        <th>Mascota</th>
+                        <th>Veterinario</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Motivo</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(cita, index) in citasPendientesFiltradas" :key="`${cita.id}-${index}`" class="payment-card">
+                        <td>{{ getNombreDueno(cita.dueno ? cita.dueno.id : null) }}</td>
+                        <td>{{ getNombreMascota(cita.mascota ? cita.mascota.id : null) }}</td>
+                        <td>{{ getNombreVeterinario(cita.veterinario ? cita.veterinario.id : null) }}</td>
+                        <td>{{ formatearFecha(cita.fecha) }}</td>
+                        <td>{{ cita.hora }}</td>
+                        <td>{{ getMotivoCita(cita.id) }}</td>
+                        <td>
+                            <span class="badge bg-info">S/ {{ (getPrecioCita(cita.id) || 0).toFixed(2) }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-warning status-badge">{{ cita.estado || 'Pendiente' }}</span>
+                        </td>
+                        <td class="text-end">
+                            <button @click="abrirModalPago(cita)" class="btn btn-success btn-sm">
+                                <i class="fas fa-credit-card me-1"></i>Registrar Pago
+                            </button>
+                        </td>
+                    </tr>
+                    <tr v-if="citasPendientesFiltradas.length === 0">
+                        <td colspan="9" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p>No hay citas pendientes de pago</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Tabla de Pagos Realizados -->
+            <table class="table mt-3" v-if="!mostrarPendientes">
+                <thead>
+                    <tr>
+                        <th>Fecha Pago</th>
+                        <th>Dueño</th>
+                        <th>Mascota</th>
+                        <th>Veterinario</th>
+                        <th>Motivo</th>
+                        <th>Monto</th>
+                        <th>Método</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(cita, index) in citasPagadasFiltradas" :key="`${cita.id}-${index}`" class="payment-card">
+                        <td>{{ formatearFechaHora(getFechaPago(cita.id)) }}</td>
+                        <td>{{ getNombreDueno(cita.dueno ? cita.dueno.id : null) }}</td>
+                        <td>{{ getNombreMascota(cita.mascota ? cita.mascota.id : null) }}</td>
+                        <td>{{ getNombreVeterinario(cita.veterinario ? cita.veterinario.id : null) }}</td>
+                        <td>{{ getMotivoCita(cita.id) }}</td>
+                        <td>
+                            <span class="badge bg-success">S/ {{ (getMontoPagado(cita.id) || 0).toFixed(2) }}</span>
+                        </td>
+                        <td>
+                            <span :class="'badge payment-method-badge ' + getBadgeClass(getMetodoPago(cita.id))">
+                                {{ getMetodoPago(cita.id) }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success status-badge">Completada</span>
+                        </td>
+                    </tr>
+                    <tr v-if="citasPagadasFiltradas.length === 0">
+                        <td colspan="8" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p>No hay pagos registrados</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Modal de Pago -->
+            <div class="modal" tabindex="-1" id="modalPago">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-credit-card me-2"></i>Registrar Pago
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div v-if="citaSeleccionada">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <strong>Dueño:</strong><br>
+                                        <span>{{ getNombreDueno(citaSeleccionada.dueno ? citaSeleccionada.dueno.id : null) }}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Mascota:</strong><br>
+                                        <span>{{ getNombreMascota(citaSeleccionada.mascota ? citaSeleccionada.mascota.id : null) }}</span>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <strong>Fecha:</strong><br>
+                                        <span>{{ formatearFecha(citaSeleccionada.fecha) }}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Hora:</strong><br>
+                                        <span>{{ citaSeleccionada.hora }}</span>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <strong>Motivo:</strong><br>
+                                        <span>{{ getMotivoCita(citaSeleccionada.id) }}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Precio:</strong><br>
+                                        <span class="badge bg-info">S/ {{ (getPrecioCita(citaSeleccionada.id) || 0).toFixed(2) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <form @submit.prevent="registrarPago">
+                                <div class="mb-3">
+                                    <label class="form-label">Método de Pago *</label>
+                                    <select v-model="pago.metodoPago" class="form-select" required>
+                                        <option value="">Seleccione método de pago</option>
+                                        <option value="Efectivo">Efectivo</option>
+                                        <option value="POS">POS</option>
+                                        <option value="Yape">Yape</option>
+                                        <option value="Plin">Plin</option>
+                                        <option value="Transferencia">Transferencia</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3" v-if="pago.metodoPago === 'Otro'">
+                                    <label class="form-label">Especificar método</label>
+                                    <input v-model="pago.otroMetodo" type="text" class="form-control" placeholder="Especifique el método de pago">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Monto *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">S/</span>
+                                        <input v-model="pago.monto" type="number" step="0.01" min="0" class="form-control" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        <i class="fas fa-times me-1"></i>Cancelar
+                                    </button>
+                                    <button type="submit" class="btn btn-success" :disabled="!pago.metodoPago || !pago.monto">
+                                        <i class="fas fa-save me-1"></i>Registrar Pago
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script layout:fragment="script">
+            // Override layout's loadVeterinarios function to prevent errors on this page
+            if (typeof loadVeterinarios === 'function') {
+                const originalLoadVeterinarios = loadVeterinarios;
+                loadVeterinarios = function() {
+                    // Do nothing on this page - no veterinarians carousel
+                    console.log('Veterinarians carousel disabled on payment management page');
+                };
+            }
+            
+            new Vue({
+                el: '#app',
+                data: {
+                    citasPendientes: [],
+                    citasPagadas: [],
+                    citasPagadasData: [],
+                    citasPendientesFiltradas: [],
+                    citasPagadasFiltradas: [],
+                    duenos: [],
+                    mascotas: [],
+                    veterinarios: [],
+                    motivosCita: [],
+                    citaSeleccionada: null,
+                    pago: {
+                        monto: 0,
+                        metodoPago: '',
+                        otroMetodo: ''
+                    },
+                    filtro: '',
+                    ordenFecha: 'asc',
+                    mostrarPendientes: true,
+                    loading: false
+                },
+                watch: {
+                    mostrarPendientes() {
+                        this.aplicarFiltro();
+                    }
+                },
+                mounted() {
+                    console.log('Vue app mounted, loading data...');
+                    this.cargarDatos();
+                },
+                methods: {
+                    cargarDatos() {
+                        console.log('Cargando datos principales...');
+                        this.loading = true;
+                        
+                        // Cargar citas pendientes
+                        fetch('/api/citas-pendientes-pago')
+                            .then(response => {
+                                console.log('Response citas pendientes:', response.status, response.statusText);
+                                if (!response.ok) {
+                                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log('Citas pendientes cargadas:', data);
+                                this.citasPendientes = data || [];
+                                this.aplicarFiltro();
+                            })
+                            .catch(error => {
+                                console.error('Error cargando citas pendientes:', error);
+                                this.citasPendientes = [];
+                            });
+
+                        // Cargar citas pagadas
+                        fetch('/api/citas-pagadas')
+                            .then(response => {
+                                console.log('Response citas pagadas:', response.status, response.statusText);
+                                if (!response.ok) {
+                                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log('Citas pagadas cargadas:', data);
+                                this.citasPagadas = data || [];
+                                this.cargarDatosPagos();
+                            })
+                            .catch(error => {
+                                console.error('Error cargando citas pagadas:', error);
+                                this.citasPagadas = [];
+                            });
+                            
+                        // Cargar datos relacionados
+                        this.cargarDatosRelacionados();
+                    },
+
+                    cargarDatosRelacionados() {
+                        // Cargar dueños
+                        fetch('/api/duenos')
+                            .then(response => response.json())
+                            .then(data => {
+                                this.duenos = data || [];
+                            })
+                            .catch(error => {
+                                console.error('Error cargando dueños:', error);
+                                this.duenos = [];
+                            });
+
+                        // Cargar mascotas
+                        fetch('/api/Mascota')
+                            .then(response => response.json())
+                            .then(data => {
+                                this.mascotas = data || [];
+                            })
+                            .catch(error => {
+                                console.error('Error cargando mascotas:', error);
+                                this.mascotas = [];
+                            });
+
+                        // Cargar veterinarios
+                        fetch('/api/veterinarios')
+                            .then(response => response.json())
+                            .then(data => {
+                                this.veterinarios = data || [];
+                            })
+                            .catch(error => {
+                                console.error('Error cargando veterinarios:', error);
+                                this.veterinarios = [];
+                            });
+
+                        // Cargar motivos de cita
+                        fetch('/api/motivos-cita')
+                            .then(response => response.json())
+                            .then(data => {
+                                this.motivosCita = data || [];
+                            })
+                            .catch(error => {
+                                console.error('Error cargando motivos de cita:', error);
+                                this.motivosCita = [];
+                            });
+                    },
+
+                    cargarDatosPagos() {
+                        // Cargar datos de pagos para las citas pagadas
+                        this.citasPagadas.forEach(cita => {
+                            fetch(`/api/pagos/boletas/cita/${cita.id}`)
+                                .then(response => {
+                                    if (response.ok) {
+                                        return response.json();
+                                    } else {
+                                        console.log(`No se encontró boleta para cita ${cita.id}`);
+                                        return null;
+                                    }
+                                })
+                                .then(data => {
+                                    if (data) {
+                                        this.citasPagadasData.push({
+                                            citaId: cita.id,
+                                            boleta: data
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error(`Error cargando boleta para cita ${cita.id}:`, error);
+                                });
+                        });
+                        
+                        // Aplicar filtro después de un breve delay para permitir que se carguen los datos
+                        setTimeout(() => {
+                            this.aplicarFiltro();
+                        }, 500);
+                    },
+
+                    getNombreDueno(duenoId) {
+                        if (!duenoId) return 'N/A';
+                        const dueno = this.duenos.find(d => d.id === duenoId);
+                        return dueno ? `${dueno.nombres} ${dueno.apellidos}` : 'N/A';
+                    },
+
+                    getNombreMascota(mascotaId) {
+                        if (!mascotaId) return 'N/A';
+                        const mascota = this.mascotas.find(m => m.id === mascotaId);
+                        return mascota ? mascota.nombre : 'N/A';
+                    },
+
+                    getNombreVeterinario(veterinarioId) {
+                        if (!veterinarioId) return 'N/A';
+                        const veterinario = this.veterinarios.find(v => v.id === veterinarioId);
+                        return veterinario ? `${veterinario.usuario.nombres} ${veterinario.usuario.apellidos}` : 'N/A';
+                    },
+
+                    getMotivoCita(citaId) {
+                        // Buscar en detalles de cita
+                        return 'Consulta General'; // Placeholder
+                    },
+
+                    getPrecioCita(citaId) {
+                        // Precio fijo por ahora
+                        return 50.00 || 0;
+                    },
+
+                    getFechaPago(citaId) {
+                        const boleta = this.citasPagadasData.find(item => item.citaId === citaId);
+                        return boleta ? boleta.boleta.fecha_emision : null;
+                    },
+
+                    getMontoPagado(citaId) {
+                        const boleta = this.citasPagadasData.find(item => item.citaId === citaId);
+                        return boleta ? boleta.boleta.monto_total : 0;
+                    },
+
+                    getMetodoPago(citaId) {
+                        const boleta = this.citasPagadasData.find(item => item.citaId === citaId);
+                        return boleta ? boleta.boleta.metodo_pago : 'N/A';
+                    },
+
+                    getBadgeClass(metodo) {
+                        const clases = {
+                            'Efectivo': 'bg-success',
+                            'POS': 'bg-primary',
+                            'Yape': 'bg-purple', // changed from bg-warning to bg-purple
+                            'Plin': 'bg-info',
+                            'Transferencia': 'bg-secondary',
+                            'Otro': 'bg-dark'
+                        };
+                        return clases[metodo] || 'bg-secondary';
+                    },
+
+                    formatearFecha(fecha) {
+                        if (!fecha) return 'N/A';
+                        return new Date(fecha).toLocaleDateString('es-ES');
+                    },
+
+                    formatearFechaHora(fecha) {
+                        if (!fecha) return 'N/A';
+                        return new Date(fecha).toLocaleString('es-ES');
+                    },
+
+                    abrirModalPago(cita) {
+                        this.citaSeleccionada = cita;
+                        this.pago = {
+                            monto: this.getPrecioCita(cita.id),
+                            metodoPago: '',
+                            otroMetodo: ''
+                        };
+                        
+                        const modalElement = document.getElementById('modalPago');
+                        if (modalElement) {
+                            const modal = new bootstrap.Modal(modalElement);
+                            modal.show();
+                        } else {
+                            console.error('Modal element not found');
+                            alert('Error: No se pudo abrir el modal de pago');
+                        }
+                    },
+
+                    registrarPago() {
+                        if (!this.citaSeleccionada || !this.pago.metodoPago || !this.pago.monto) {
+                            alert('Por favor complete todos los campos requeridos');
+                            return;
+                        }
+
+                        const formData = new FormData();
+                        formData.append('citaId', this.citaSeleccionada.id);
+                        formData.append('monto', this.pago.monto);
+                        formData.append('metodoPago', this.pago.metodoPago === 'Otro' ? this.pago.otroMetodo : this.pago.metodoPago);
+
+                        fetch('/api/pagos/registrar', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.text())
+                        .then(result => {
+                            console.log('Pago registrado:', result);
+                            
+                            if (result.startsWith('SUCCESS')) {
+                                // Cerrar modal y recargar datos
+                                const modal = bootstrap.Modal.getInstance(document.getElementById('modalPago'));
+                                if (modal) {
+                                    modal.hide();
+                                    // Remove focus from any elements in the modal
+                                    document.activeElement?.blur();
+                                }
+                                
+                                // Recargar datos
+                                this.cargarDatos();
+                                
+                                alert('Pago registrado exitosamente');
+                            } else {
+                                alert('Error: ' + result);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error registrando pago:', error);
+                            alert('Error al registrar el pago: ' + error.message);
+                        });
+                    },
+
+                    aplicarFiltro() {
+                        if (this.mostrarPendientes) {
+                            this.filtrarCitasPendientes();
+                        } else {
+                            this.filtrarCitasPagadas();
+                        }
+                    },
+
+                    filtrarCitasPendientes() {
+                        let filtradas = [...this.citasPendientes];
+
+                        // Filtro de texto mejorado
+                        if (this.filtro) {
+                            const filtroLower = this.filtro.toLowerCase();
+                            filtradas = filtradas.filter(cita => {
+                                const dueno = this.getNombreDueno(cita.dueno ? cita.dueno.id : null);
+                                const mascota = this.getNombreMascota(cita.mascota ? cita.mascota.id : null);
+                                const veterinario = this.getNombreVeterinario(cita.veterinario ? cita.veterinario.id : null);
+                                const motivo = this.getMotivoCita(cita.id);
+                                const fecha = this.formatearFecha(cita.fecha);
+                                const hora = cita.hora;
+                                const precio = this.getPrecioCita(cita.id);
+                                
+                                return dueno.toLowerCase().includes(filtroLower) ||
+                                       mascota.toLowerCase().includes(filtroLower) ||
+                                       veterinario.toLowerCase().includes(filtroLower) ||
+                                       motivo.toLowerCase().includes(filtroLower) ||
+                                       fecha.toLowerCase().includes(filtroLower) ||
+                                       hora.toLowerCase().includes(filtroLower) ||
+                                       precio.toString().includes(filtroLower);
+                            });
+                        }
+
+                        // Ordenamiento
+                        filtradas.sort((a, b) => {
+                            const fechaA = new Date(a.fecha);
+                            const fechaB = new Date(b.fecha);
+                            
+                            if (this.ordenFecha === 'desc') {
+                                return fechaB - fechaA;
+                            } else {
+                                return fechaA - fechaB;
+                            }
+                        });
+
+                        this.citasPendientesFiltradas = filtradas;
+                    },
+
+                    filtrarCitasPagadas() {
+                        let filtradas = [...this.citasPagadas];
+
+                        // Filtro de texto mejorado
+                        if (this.filtro) {
+                            const filtroLower = this.filtro.toLowerCase();
+                            filtradas = filtradas.filter(cita => {
+                                const dueno = this.getNombreDueno(cita.dueno ? cita.dueno.id : null);
+                                const mascota = this.getNombreMascota(cita.mascota ? cita.mascota.id : null);
+                                const veterinario = this.getNombreVeterinario(cita.veterinario ? cita.veterinario.id : null);
+                                const motivo = this.getMotivoCita(cita.id);
+                                const fechaPago = this.formatearFechaHora(this.getFechaPago(cita.id));
+                                const monto = this.getMontoPagado(cita.id);
+                                const metodoPago = this.getMetodoPago(cita.id);
+                                
+                                return dueno.toLowerCase().includes(filtroLower) ||
+                                       mascota.toLowerCase().includes(filtroLower) ||
+                                       veterinario.toLowerCase().includes(filtroLower) ||
+                                       motivo.toLowerCase().includes(filtroLower) ||
+                                       fechaPago.toLowerCase().includes(filtroLower) ||
+                                       monto.toString().includes(filtroLower) ||
+                                       metodoPago.toLowerCase().includes(filtroLower);
+                            });
+                        }
+
+                        // Ordenamiento
+                        filtradas.sort((a, b) => {
+                            const fechaA = this.getFechaPago(a.id);
+                            const fechaB = this.getFechaPago(b.id);
+                            
+                            if (!fechaA || !fechaB) return 0;
+                            
+                            if (this.ordenFecha === 'desc') {
+                                return new Date(fechaB) - new Date(fechaA);
+                            } else {
+                                return new Date(fechaA) - new Date(fechaB);
+                            }
+                        });
+
+                        this.citasPagadasFiltradas = filtradas;
+                    },
+
+                    ordenarPorFecha(direccion) {
+                        this.ordenFecha = direccion;
+                        this.aplicarFiltro();
+                    },
+
+                    limpiarFiltro() {
+                        this.filtro = '';
+                        this.ordenFecha = 'asc';
+                        this.aplicarFiltro();
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

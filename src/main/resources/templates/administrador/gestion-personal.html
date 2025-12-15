@@ -1,0 +1,493 @@
+<html layout:decorate="_layoutAdministrador">
+<head>
+    <title>Gestión de Personal - VetGes</title>
+    <style>
+        /* Estilos específicos para gestión de personal */
+        .personal-card {
+            width: 100%;
+            max-width: 700px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 14px;
+            background: #fff;
+            margin-bottom: 1.5rem;
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .personal-info {
+            flex: 1;
+            text-align: left;
+        }
+        .personal-nombre {
+            color: #888;
+            font-size: 0.98rem;
+            margin-bottom: 0.5rem;
+        }
+        .personal-tipo {
+            font-size: 2.08rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        .btn-eliminar {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            padding: 0.4rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-eliminar:hover {
+            background: #c82333;
+        }
+        .btn-info {
+            background: #f5f5f5;
+            border: 1px solid #bdbdbd;
+            border-radius: 6px;
+            color: #333;
+            padding: 0.35rem 1.1rem;
+            font-size: 0.98rem;
+            cursor: pointer;
+            transition: background 0.2s, border 0.2s;
+        }
+        .btn-info:hover {
+            background: #e0e0e0;
+            border: 1px solid #2196f3;
+            color: #2196f3;
+        }
+        .btn-registrar {
+            position: fixed;
+            right: 2rem;
+            bottom: 2rem;
+            z-index: 1050;
+            border-radius: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        @media (max-width: 800px) {
+            .personal-card { max-width: 100%; }
+        }
+        @media (max-width: 600px) {
+            .btn-registrar { right: 1rem; bottom: 1rem; }
+            .personal-card { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container my-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold mb-1">Gestión de Personal</h3>
+                    <div class="text-muted" style="font-size:1rem;">Administración del personal veterinario y recepcionistas</div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center" type="button" id="dropdownFiltro" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="me-2">Seleccionar Filtro</span> <i class="fa fa-filter"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="dropdownFiltro">
+                        <li><h6 class="dropdown-header">Filtrar por tipo:</h6></li>
+                        <li><a class="dropdown-item" :class="{'active': filtroSeleccionado === ''}" href="#" @click="filtroSeleccionado = ''; filtrarPersonas()">Todos</a></li>
+                        <li><a class="dropdown-item" :class="{'active': filtroSeleccionado === 'Veterinario'}" href="#" @click="filtroSeleccionado = 'Veterinario'; filtrarPersonas()">Veterinarios</a></li>
+                        <li><a class="dropdown-item" :class="{'active': filtroSeleccionado === 'Recepcionista'}" href="#" @click="filtroSeleccionado = 'Recepcionista'; filtrarPersonas()">Recepcionistas</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Ordenar por fecha:</h6></li>
+                        <li><a class="dropdown-item" :class="{'active': ordenSeleccionado === 'recientes'}" href="#" @click="ordenSeleccionado = 'recientes'; ordenarPersonas()">Más recientes primero</a></li>
+                        <li><a class="dropdown-item" :class="{'active': ordenSeleccionado === 'antiguos'}" href="#" @click="ordenSeleccionado = 'antiguos'; ordenarPersonas()">Más antiguos primero</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Ordenar alfabéticamente:</h6></li>
+                        <li><a class="dropdown-item" :class="{'active': ordenSeleccionado === 'asc'}" href="#" @click="ordenSeleccionado = 'asc'; ordenarPersonas()">A-Z</a></li>
+                        <li><a class="dropdown-item" :class="{'active': ordenSeleccionado === 'desc'}" href="#" @click="ordenSeleccionado = 'desc'; ordenarPersonas()">Z-A</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary mb-3" onclick="window.location.href='/administrador/dashboard'">
+                <i class="fa fa-arrow-left me-2"></i>Regresar al Dashboard
+            </button>
+            
+            <!-- Botón Registrar estático, centrado y arriba del footer -->
+            <div id="app">
+                <!-- Contenedor de tarjetas centrado -->
+                <div class="d-flex flex-column align-items-center">
+                    <div class="personal-card" v-for="(item, index) in personal" :key="`${item.id}-${index}`">
+                        <div class="personal-info">
+                            <div class="personal-nombre" style="font-size:2.08rem; font-weight:600; color:#222;">{{ item.nombres }} {{ item.apellidos }}</div>
+                            <div class="personal-tipo" style="color:#888; font-size:0.98rem; margin-bottom:0.5rem;">{{ item.tipo }}</div>
+                            <div>DNI: {{ item.dni }} | Celular: {{ item.celular }}</div>
+                            <button class="btn-info" @click="verInformacion(item)">Ver información</button>
+                        </div>
+                        <button class="btn btn-primary btn-eliminar" @click="eliminar(item)">ELIMINAR</button>
+                    </div>
+                </div>
+                
+                <!-- Después del contenedor de tarjetas, botón registrar alineado a la derecha -->
+                <div class="d-flex justify-content-end my-4">
+                    <button class="btn btn-primary d-flex align-items-center" @click="nuevo">
+                        <span>REGISTRAR</span> <i class="icon-user ms-2"></i> <i class="icon-plus ms-1"></i>
+                    </button>
+                </div>
+                
+                <!-- Modal para nuevo/editar -->
+                <div class="modal fade" tabindex="-1" id="mdlEntidad">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" v-if="entidad.id==0">Registrar Personal</h5>
+                                <h5 class="modal-title" v-if="entidad.id!=0">Editar Personal</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6 border-end">
+                                        <h6 class="fw-bold mb-3">Datos Personales</h6>
+                                        <div class="mb-3">
+                                            <label for="dni" class="form-label">DNI</label>
+                                            <input class="form-control" id="dni" v-model="entidad.dni" required />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="nombres" class="form-label">Nombres</label>
+                                            <input class="form-control" id="nombres" v-model="entidad.nombres" required />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="apellidos" class="form-label">Apellidos</label>
+                                            <input class="form-control" id="apellidos" v-model="entidad.apellidos" required />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="celular" class="form-label">Número de Celular</label>
+                                            <input class="form-control" id="celular" v-model="entidad.celular" required />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                                            <input type="date" class="form-control" id="fechaNacimiento" v-model="entidad.fechaNacimiento" required />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Correo Electrónico</label>
+                                            <input type="email" class="form-control" id="email" v-model="entidad.email" required />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="fw-bold mb-3">Datos Laborales</h6>
+                                        <div class="mb-3">
+                                            <label for="tipoPersonal" class="form-label">Tipo de Personal</label>
+                                            <select class="form-select" id="tipoPersonal" v-model="entidad.tipo">
+                                                <option value="Veterinario">Veterinario</option>
+                                                <option value="Recepcionista">Recepcionista</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3" v-if="entidad.tipo === 'Veterinario'">
+                                            <label for="numeroColegio" class="form-label">Número de Colegio Médico Veterinario</label>
+                                            <input class="form-control" id="numeroColegio" v-model="entidad.numeroColegioMedico" required />
+                                        </div>
+                                        <div class="mb-3" v-if="entidad.tipo === 'Veterinario'">
+                                            <label for="especialidad" class="form-label">Especialidad</label>
+                                            <input class="form-control" id="especialidad" v-model="entidad.especialidad" required />
+                                        </div>
+                                        <div class="mb-3" v-if="entidad.tipo === 'Recepcionista'">
+                                            <label for="clinica" class="form-label">Clínica</label>
+                                            <select class="form-select" id="clinica" v-model="entidad.clinicaId">
+                                                <option value="">Seleccionar clínica</option>
+                                                <option value="1">Clínica Principal</option>
+                                                <option value="2">Clínica Secundaria</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" v-if="entidad.id==0" @click="guardar">Guardar</button>
+                                <button type="button" class="btn btn-primary" v-if="entidad.id!=0" @click="actualizar">Actualizar</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal para confirmar eliminación -->
+                <div class="modal fade" tabindex="-1" id="mdlEliminar">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirmar Eliminación</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                ¿Estás seguro que deseas eliminar este personal?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger" @click="confirmarEliminacion">Eliminar</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal para ver información -->
+                <div class="modal fade" tabindex="-1" id="mdlInfo">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Información del Personal</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6 border-end">
+                                        <h6 class="fw-bold mb-3">Datos Personales</h6>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">DNI:</label>
+                                            <p>{{entidad.dni}}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Nombres:</label>
+                                            <p>{{entidad.nombres}}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Apellidos:</label>
+                                            <p>{{entidad.apellidos}}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Número de Celular:</label>
+                                            <p>{{entidad.celular}}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Fecha de Nacimiento:</label>
+                                            <p>{{entidad.fechaNacimiento}}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Correo Electrónico:</label>
+                                            <p>{{entidad.email}}</p>
+                                        </div>
+                                        <div class="mb-3" v-if="entidad.passwordGenerada">
+                                            <label class="form-label fw-bold">Contraseña Generada:</label>
+                                            <p class="text-success fw-bold">{{entidad.passwordGenerada}}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Fecha de Registro:</label>
+                                            <p>{{entidad.fechaRegistro}}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="fw-bold mb-3">Datos Laborales</h6>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Tipo:</label>
+                                            <p>{{entidad.tipo}}</p>
+                                        </div>
+                                        <div class="mb-3" v-if="entidad.tipo === 'Veterinario'">
+                                            <label class="form-label fw-bold">Número de Colegio Médico Veterinario:</label>
+                                            <p>{{entidad.numeroColegioMedico}}</p>
+                                        </div>
+                                        <div class="mb-3" v-if="entidad.tipo === 'Veterinario'">
+                                            <label class="form-label fw-bold">Especialidad:</label>
+                                            <p>{{entidad.especialidad}}</p>
+                                        </div>
+                                        <div class="mb-3" v-if="entidad.tipo === 'Recepcionista'">
+                                            <label class="form-label fw-bold">Clínica:</label>
+                                            <p>{{entidad.clinica}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" @click="editarDesdeInfo">Editar</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script layout:fragment="script">
+        new Vue({
+            el: "#app",
+            data: {
+                entidades: [],
+                personal: [], // Changed from personasFiltradas to personal
+                entidad: {
+                    id: 0,
+                    tipo: '',
+                    dni: '',
+                    nombres: '',
+                    apellidos: '',
+                    celular: '',
+                    fechaNacimiento: '',
+                    fechaRegistro: '',
+                    numeroColegioMedico: '',
+                    especialidad: '',
+                    clinica: '',
+                    clinicaId: null,
+                    email: '',
+                    passwordGenerada: false // Added passwordGenerada field
+                },
+                filtroSeleccionado: '',
+                ordenSeleccionado: 'recientes'
+            },
+            mounted() {
+                this.cargarDatos();
+            },
+            methods: {
+                cargarDatos() {
+                    fetch('/api/gestion-personal/personal')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error al cargar datos: ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Datos cargados:', data);
+                            this.entidades = data;
+                            this.personal = data; // Assign all data to personal
+                            this.filtrarPersonas();
+                        })
+                        .catch(error => {
+                            console.error('Error al cargar datos:', error);
+                            alert('Error al cargar los datos del personal');
+                        });
+                },
+                filtrarPersonas() {
+                    this.personal = this.entidades.filter(item => {
+                        if (this.filtroSeleccionado === '') return true;
+                        return item.tipo === this.filtroSeleccionado;
+                    });
+                    this.ordenarPersonas();
+                },
+                ordenarPersonas() {
+                    if (this.ordenSeleccionado === 'recientes') {
+                        this.personal.sort((a, b) => {
+                            const dateA = new Date(a.fechaRegistro);
+                            const dateB = new Date(b.fechaRegistro);
+                            return dateB - dateA;
+                        });
+                    } else if (this.ordenSeleccionado === 'antiguos') {
+                        this.personal.sort((a, b) => {
+                            const dateA = new Date(a.fechaRegistro);
+                            const dateB = new Date(b.fechaRegistro);
+                            return dateA - dateB;
+                        });
+                    } else if (this.ordenSeleccionado === 'asc') {
+                        this.personal.sort((a, b) => 
+                            (a.nombres + ' ' + a.apellidos).localeCompare(b.nombres + ' ' + b.apellidos));
+                    } else if (this.ordenSeleccionado === 'desc') {
+                        this.personal.sort((a, b) => 
+                            (b.nombres + ' ' + b.apellidos).localeCompare(a.nombres + ' ' + a.apellidos));
+                    }
+                },
+                nuevo() {
+                    this.entidad = {
+                        id: 0,
+                        tipo: '',
+                        dni: '',
+                        nombres: '',
+                        apellidos: '',
+                        celular: '',
+                        fechaNacimiento: '',
+                        fechaRegistro: new Date().toISOString(),
+                        numeroColegioMedico: '',
+                        especialidad: '',
+                        clinica: '',
+                        clinicaId: null,
+                        email: '',
+                        passwordGenerada: false // Initialize passwordGenerada for new entry
+                    };
+                    new bootstrap.Modal(document.getElementById('mdlEntidad')).show();
+                },
+                guardar() {
+                    fetch('/api/gestion-personal/personal', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.entidad)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al guardar');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        bootstrap.Modal.getInstance(document.getElementById('mdlEntidad')).hide();
+                        this.cargarDatos();
+                        
+                        // Mostrar la contraseña generada al admin
+                        if (data.passwordGenerada) {
+                            alert('Personal registrado exitosamente.\n\n' +
+                                  'Email: ' + data.email + '\n' +
+                                  'Contraseña generada: ' + data.passwordGenerada + '\n\n' +
+                                  'Guarde esta información para proporcionarla al empleado.');
+                        } else {
+                        alert('Personal registrado exitosamente');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al guardar el personal: ' + error.message);
+                    });
+                },
+                actualizar() {
+                    fetch(`/api/gestion-personal/personal/${this.entidad.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.entidad)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al actualizar');
+                        }
+                        return response.json();
+                    })
+                    .then(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('mdlEntidad')).hide();
+                        this.cargarDatos();
+                        alert('Personal actualizado exitosamente');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al actualizar el personal');
+                    });
+                },
+                eliminar(item) {
+                    this.entidad = {...item};
+                    new bootstrap.Modal(document.getElementById('mdlEliminar')).show();
+                },
+                confirmarEliminacion() {
+                    fetch(`/api/gestion-personal/personal/${this.entidad.id}?tipo=${this.entidad.tipo}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al eliminar');
+                        }
+                        bootstrap.Modal.getInstance(document.getElementById('mdlEliminar')).hide();
+                        this.cargarDatos();
+                        alert('Personal eliminado exitosamente');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al eliminar el personal');
+                    });
+                },
+                verInformacion(item) {
+                    this.entidad = {...item};
+                    new bootstrap.Modal(document.getElementById('mdlInfo')).show();
+                },
+                editarDesdeInfo() {
+                    bootstrap.Modal.getInstance(document.getElementById('mdlInfo')).hide();
+                    new bootstrap.Modal(document.getElementById('mdlEntidad')).show();
+                }
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.6.1/vue-resource.min.js"></script>
+    <script>
+        // Scripts específicos para gestión de personal (si tienes alguno personalizado, colócalo aquí)
+    </script>
+</body>
+</html> 

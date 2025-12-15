@@ -1,0 +1,287 @@
+<html layout:decorate="_layoutRecepcionista">
+<head>
+    <title>Reportes - Cierre de Caja</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <h2>Reportes de Cierre de Caja</h2>
+                    <p class="lead">Genera reportes detallados de pagos por día</p>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Filtros de Reporte</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <label for="fechaReporte" class="form-label">Fecha del Reporte</label>
+                                    <input type="date" class="form-control" id="fechaReporte" value="">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button class="btn btn-primary w-100" onclick="generarReporte()">
+                                        <i class="icon-search"></i> Generar Reporte
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Resumen del Día</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h4 class="text-success" id="totalGeneral">S/ 0.00</h4>
+                                        <small class="text-muted">Total General</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h4 class="text-info" id="cantidadBoletas">0</h4>
+                                        <small class="text-muted">Boletas Generadas</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Totales por Método de Pago -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Totales por Método de Pago</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="text-center">
+                                        <h5 class="text-success" id="totalEfectivo">S/ 0.00</h5>
+                                        <small class="text-muted">Efectivo</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center">
+                                        <h5 class="text-primary" id="totalPOS">S/ 0.00</h5>
+                                        <small class="text-muted">POS</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center">
+                                        <h5 class="text-purple" id="totalYape">S/ 0.00</h5>
+                                        <small class="text-muted">Yape</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center">
+                                        <h5 class="text-info" id="totalPlin">S/ 0.00</h5>
+                                        <small class="text-muted">Plin</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center">
+                                        <h5 class="text-secondary" id="totalTransferencia">S/ 0.00</h5>
+                                        <small class="text-muted">Transferencia</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center">
+                                        <h5 class="text-dark" id="totalOtros">S/ 0.00</h5>
+                                        <small class="text-muted">Otros</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Boletas -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5>Detalle de Boletas</h5>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="exportarPDF()">
+                                    <i class="icon-download"></i> Exportar PDF
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="exportarExcel()">
+                                    <i class="icon-download"></i> Exportar Excel
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th># Boleta</th>
+                                            <th>Hora</th>
+                                            <th>Cliente</th>
+                                            <th>Mascota</th>
+                                            <th>Veterinario</th>
+                                            <th>Motivo</th>
+                                            <th>Método Pago</th>
+                                            <th>Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="boletasTbody">
+                                        <!-- Las boletas se cargarán aquí -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="noDataMessage" class="text-center text-muted mt-4" style="display: none;">
+                                <i class="icon-doc-text" style="font-size: 3rem;"></i>
+                                <p class="mt-2">No hay boletas para la fecha seleccionada</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Establecer fecha actual por defecto
+            document.addEventListener('DOMContentLoaded', function() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('fechaReporte').value = today;
+                generarReporte();
+            });
+
+            function generarReporte() {
+                const fecha = document.getElementById('fechaReporte').value;
+                if (!fecha) {
+                    alert('Por favor seleccione una fecha');
+                    return;
+                }
+
+                // Mostrar loading
+                document.getElementById('boletasTbody').innerHTML = '<tr><td colspan="8" class="text-center"><i class="icon-spinner animate-spin"></i> Cargando...</td></tr>';
+
+                fetch(`/api/reportes/pagos-por-fecha?fecha=${fecha}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderizarReporte(data);
+                        } else {
+                            alert('Error al generar el reporte: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al generar el reporte');
+                    });
+            }
+
+            function renderizarReporte(data) {
+                const boletas = data.boletas || [];
+                const totales = data.totales || {};
+                
+                // Actualizar totales
+                document.getElementById('totalGeneral').textContent = `S/ ${totales.general?.toFixed(2) || '0.00'}`;
+                document.getElementById('cantidadBoletas').textContent = data.cantidad_boletas || 0;
+                document.getElementById('totalEfectivo').textContent = `S/ ${totales.efectivo?.toFixed(2) || '0.00'}`;
+                document.getElementById('totalPOS').textContent = `S/ ${totales.pos?.toFixed(2) || '0.00'}`;
+                document.getElementById('totalYape').textContent = `S/ ${totales.yape?.toFixed(2) || '0.00'}`;
+                document.getElementById('totalPlin').textContent = `S/ ${totales.plin?.toFixed(2) || '0.00'}`;
+                document.getElementById('totalTransferencia').textContent = `S/ ${totales.transferencia?.toFixed(2) || '0.00'}`;
+                document.getElementById('totalOtros').textContent = `S/ ${totales.otros?.toFixed(2) || '0.00'}`;
+
+                // Renderizar tabla
+                const tbody = document.getElementById('boletasTbody');
+                const noDataMessage = document.getElementById('noDataMessage');
+                
+                if (boletas.length === 0) {
+                    tbody.innerHTML = '';
+                    noDataMessage.style.display = 'block';
+                    return;
+                }
+
+                noDataMessage.style.display = 'none';
+                tbody.innerHTML = '';
+
+                boletas.forEach(boleta => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${boleta.id}</td>
+                        <td>${formatearHora(boleta.cita_hora)}</td>
+                        <td>${boleta.cliente_nombre || 'N/A'}</td>
+                        <td>${boleta.mascota_nombre || 'N/A'}</td>
+                        <td>${boleta.veterinario_nombre || 'N/A'}</td>
+                        <td>${boleta.motivo_nombre || 'N/A'}</td>
+                        <td><span class="badge ${getBadgeClass(boleta.metodo_pago)}">${boleta.metodo_pago || 'N/A'}</span></td>
+                        <td class="text-end"><strong>S/ ${boleta.monto_total?.toFixed(2) || '0.00'}</strong></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function formatearHora(hora) {
+                if (!hora) return 'N/A';
+                return hora.toString();
+            }
+
+            function getBadgeClass(metodo) {
+                const clases = {
+                    'Efectivo': 'bg-success',
+                    'POS': 'bg-primary',
+                    'Yape': 'bg-purple',
+                    'Plin': 'bg-info',
+                    'Transferencia': 'bg-secondary',
+                    'Otro': 'bg-dark'
+                };
+                return clases[metodo] || 'bg-secondary';
+            }
+
+            function exportarPDF() {
+                const fecha = document.getElementById('fechaReporte').value;
+                if (!fecha) {
+                    alert('Por favor seleccione una fecha');
+                    return;
+                }
+                window.open(`/api/reportes/pagos-por-fecha/pdf?fecha=${fecha}`, '_blank');
+            }
+
+            function exportarExcel() {
+                alert('Función de exportar Excel en desarrollo');
+            }
+        </script>
+
+        <style>
+            .animate-spin {
+                animation: spin 1s linear infinite;
+            }
+            
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            
+            .text-purple {
+                color: #6f42c1 !important;
+            }
+            
+            .bg-purple {
+                background-color: #6f42c1 !important;
+            }
+        </style>
+    </div>
+</body>
+</html> 

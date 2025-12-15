@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html layout:decorate="_layoutRecepcionista" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Clientes - VetGes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div layout:fragment="content">
+    <div id="appClientes" class="container mt-4">
+        <h2>Clientes</h2>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <input type="text" class="form-control" v-model="filtro" placeholder="Buscar por nombre o apellido..." @keyup.enter="aplicarFiltro">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" @click="aplicarFiltro">Filtrar</button>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-success w-100" @click="abrirModalRegistrar">Registrar</button>
+            </div>
+        </div>
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>DNI</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="cliente in clientesFiltrados" :key="cliente.id">
+                    <td>[[ cliente.usuario.nombres ]]</td>
+                    <td>[[ cliente.usuario.apellidos ]]</td>
+                    <td>[[ cliente.usuario.dni ]]</td>
+                    <td>[[ cliente.usuario.celular ]]</td> 
+                    <td>[[ cliente.usuario.email ]]</td>
+                </tr>
+            </tbody>
+        </table>
+        <div v-if="clientesFiltrados.length === 0" class="alert alert-warning">No se encontraron clientes.</div>
+        
+        <!-- Modal de registro - MOVIDO DENTRO DEL SCOPE DE VUE -->
+        <div class="modal fade" id="modalRegistrar" tabindex="-1" aria-labelledby="modalRegistrarLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modalRegistrarLabel">Registrar Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+              </div>
+              <div class="modal-body">
+                <form @submit.prevent="registrarCliente">
+                  <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" class="form-control" v-model="nuevoCliente.nombres" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" class="form-control" v-model="nuevoCliente.apellidos" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">DNI</label>
+                    <input type="text" class="form-control" v-model="nuevoCliente.dni" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" class="form-control" v-model="nuevoCliente.celular" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" v-model="nuevoCliente.email" required>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Registrar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.6.1/vue-resource.min.js"></script>
+<script>
+new Vue({
+    el: '#appClientes',
+    delimiters: ['[[', ']]'], // AGREGADO: Delimitadores para evitar conflicto con Thymeleaf
+    data: {
+        clientes: [],
+        filtro: '',
+        nuevoCliente: {
+            nombres: '',
+            apellidos: '',
+            dni: '',
+            celular: '',
+            email: ''
+        }
+    },
+    computed: {
+        clientesFiltrados() {
+            if (!this.filtro.trim()) return this.clientes;
+            const f = this.filtro.toLowerCase();
+            return this.clientes.filter(c =>
+                c.usuario.nombres.toLowerCase().includes(f) ||
+                c.usuario.apellidos.toLowerCase().includes(f)
+            );
+        }
+    },
+    methods: {
+        aplicarFiltro() {
+            // No es necesario si usas computed, pero puedes recargar aquí si quieres
+        },
+        abrirModalRegistrar() {
+            this.nuevoCliente = { nombres: '', apellidos: '', dni: '', celular: '', email: '' };
+            // Usar Bootstrap 5 modal API
+            const modal = new bootstrap.Modal(document.getElementById('modalRegistrar'));
+            modal.show();
+        },
+        registrarCliente() {
+            // Lógica para registrar el cliente
+            this.$http.post('/api/Usuario', {
+                nombres: this.nuevoCliente.nombres,
+                apellidos: this.nuevoCliente.apellidos,
+                dni: this.nuevoCliente.dni,
+                celular: this.nuevoCliente.celular,
+                email: this.nuevoCliente.email
+            }).then(resp => {
+                // Ahora crea el Dueno asociado
+                const usuarioId = resp.data.id;
+                this.$http.post('/api/Dueno', {
+                    usuario: { id: usuarioId }
+                }).then(() => {
+                    // Usar Bootstrap 5 modal API para cerrar
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalRegistrar'));
+                    modal.hide();
+                    // Recargar la lista de clientes
+                    this.cargarClientes();
+                }).catch(error => {
+                    console.error('Error al crear dueño:', error);
+                    alert('Error al registrar el cliente');
+                });
+            }).catch(error => {
+                console.error('Error al crear usuario:', error);
+                alert('Error al registrar el cliente');
+            });
+        },
+        cargarClientes() {
+            this.$http.get('/api/Dueno').then(resp => {
+                this.clientes = Array.isArray(resp.data) ? resp.data : [];
+            }).catch(error => {
+                console.error('Error al cargar clientes:', error);
+                this.clientes = [];
+            });
+        }
+    },
+    mounted() {
+        this.cargarClientes();
+    }
+});
+</script>
+</body>
+</html>

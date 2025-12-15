@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html   layout:decorate="_layoutRecepcionista"
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+    <head>
+        <meta   charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>VetGes: Gestion de citas</title>
+        <style>
+            .top-section-spacing > * + * {
+                margin-top: 1rem !important;
+            }
+            .btn-group.w-100 > .btn {
+                padding-top: 0.7rem;
+                padding-bottom: 0.7rem;
+            }
+            .input-group {
+                margin-bottom: 0.7rem;
+            }
+            .btn-outline-primary.text-primary { color: #0d6efd !important; }
+        </style>
+    </head>
+    <body>
+        <div layout:fragment="content">
+            <p></p>
+            <p></p>
+            <h1>Gestion de citas</h1>
+            <div class="row mb-4">
+                <div class="col-12 top-section-spacing">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="mb-0">Gestión de Citas</h2>
+                        <button class="btn btn-success" @click="nuevo">
+                            <i class="fas fa-plus"></i> Nueva Cita
+                        </button>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" v-model="filtro" placeholder="Filtrar por DNI, nombre del dueño, fecha, veterinario o motivo de cita..." @keyup.enter="aplicarFiltro">
+                        <button class="btn btn-outline-secondary" @click="aplicarFiltro">Filtrar</button>
+                        <button class="btn btn-outline-danger" @click="limpiarFiltro" v-if="filtro">Limpiar</button>
+                    </div>
+                    <div class="btn-group w-100 d-flex justify-content-center" role="group">
+                        <button class="btn"
+                            :class="ordenFecha === 'desc' ? 'btn-primary text-white' : 'btn-outline-primary text-primary'"
+                            @click="ordenarPorFecha('desc')">
+                            Más reciente
+                        </button>
+                        <button class="btn"
+                            :class="ordenFecha === 'asc' ? 'btn-primary text-white' : 'btn-outline-primary text-primary'"
+                            @click="ordenarPorFecha('asc')">
+                            Más antigua
+                        </button>
+                </div>
+                    <div class="btn-group w-100 d-flex justify-content-center" role="group">
+                        <button class="btn"
+                            :class="!mostrarCompletadas ? 'btn-warning text-white' : 'btn-outline-primary text-primary'"
+                            @click="mostrarCompletadas = false">
+                            Citas sin completar <span class="badge bg-warning ms-2">{{ citasSinCompletarCount }}</span>
+                        </button>
+                        <button class="btn"
+                            :class="mostrarCompletadas ? 'btn-warning text-white' : 'btn-outline-primary text-primary'"
+                            @click="mostrarCompletadas = true">
+                            Ver Citas Completadas <span class="badge bg-success ms-2">{{ citasCompletadasCount }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>Dueño</th>
+                        <th>Mascota</th>
+                        <th>Veterinario</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th v-if="!mostrarCompletadas" class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="item in entidades" v-if="item && item.id && (mostrarCompletadas ? item.estado === 'Completada' : item.estado !== 'Completada')">
+                        <td>{{ getNombreDueno(item.dueno ? item.dueno.id : null) }}</td>
+                        <td>{{ getNombreMascota(item.mascota ? item.mascota.id : null) }}</td>
+                        <td>{{ getNombreVeterinario(item.veterinario ? item.veterinario.id : null) }}</td>
+                        <td>{{item.fecha}}</td>
+                        <td>{{item.hora}}</td>
+                        <td>{{ getMotivoCita(item.id) }}</td>
+                        <td>
+                            <span v-if="mostrarCompletadas">{{item.estado}}</span>
+                            <select v-else class="form-select" v-model="item.estado" @change="cambiarEstado(item)">
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En proceso">En proceso</option>
+                                <option value="Completada">Completada</option>
+                                <option value="Cancelada">Cancelada</option>
+                            </select>
+                        </td>
+                        <td v-if="!mostrarCompletadas" class="text-end">
+                            <button class="btn btn-primary" @click="editar(item.id)">Editar</button>
+                            <button class="btn btn-danger" @click="eliminar(item.id)">Eliminar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="modal" tabindex="-1" id="mdlEntidad">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" v-if="entidad.id==0">Nueva</h5>
+                            <h5 class="modal-title" v-if="entidad.id!=0">Editar</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            
+                            <div class="mb-3">
+                                <label for="fecha" class="form-label">Fecha</label>
+                                    <input type="date" class="form-control" id="fecha" v-model="entidad.fecha" required/>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="hora" class="form-label">Hora</label>
+                                    <input type="time" class="form-control" id="hora" v-model="entidad.hora" required/>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Dueño</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" :value="getNombreDuenoSeleccionado()" readonly placeholder="Seleccione un dueño" />
+                                        <button class="btn btn-outline-secondary" type="button" @click="abrirModalDueno">Buscar Dueño</button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Mascota</label>
+                                    <select class="form-control" v-model="entidad.mascota.id" required :disabled="!entidad.dueno.id">
+                                        <option disabled value="">Seleccione una mascota</option>
+                                        <option v-for="mascota in mascotasFiltradas" :value="mascota.id">
+                                            {{ mascota.nombre }} ({{ mascota.especie }} - {{ mascota.raza }})
+                                        </option>
+                                    </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Veterinario</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" :value="getNombreVeterinarioSeleccionado()" readonly placeholder="Seleccione un veterinario" />
+                                        <button class="btn btn-outline-secondary" type="button" @click="abrirModalVeterinario">Buscar Veterinario</button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Motivo de Cita</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" :value="getNombreMotivoSeleccionado()" readonly placeholder="Seleccione un motivo" />
+                                        <button class="btn btn-outline-secondary" type="button" @click="abrirModalMotivo">Buscar Motivo</button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="observaciones" class="form-label">Observaciones</label>
+                                <textarea class="form-control" id="observaciones" name="observaciones" v-model="entidad.observaciones" placeholder="Observaciones adicionales..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" v-if="entidad.id==0" @click="guardar">Guardar</button>
+                            <button type="button" class="btn btn-primary" v-if="entidad.id!=0" @click="actualizar">Actualizar</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal" tabindex="-1" id="mdlEliminar">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Eliminar</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            ¿Estás seguro que quieres eliminar?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" @click="confimareliminacion">Eliminar</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal para seleccionar dueño -->
+            <div class="modal" tabindex="-1" id="mdlSeleccionarDueno">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Seleccionar Dueño</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" v-model="filtroDueno" placeholder="Buscar por nombre o DNI..." @keyup.enter="aplicarFiltroDueno">
+                                        <button class="btn btn-outline-secondary" @click="aplicarFiltroDueno">Buscar</button>
+                                        <button class="btn btn-outline-danger" @click="limpiarFiltroDueno" v-if="filtroDueno">Limpiar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>DNI</th>
+                                            <th>Nombres</th>
+                                            <th>Apellidos</th>
+                                            <th>Teléfono</th>
+                                            <th>Email</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="dueno in duenosFiltrados" @click="seleccionarDueno(dueno)" style="cursor: pointer;">
+                                            <td>{{ dueno.dni }}</td>
+                                            <td>{{ dueno.nombres }}</td>
+                                            <td>{{ dueno.apellidos }}</td>
+                                            <td>{{ dueno.celular }}</td>
+                                            <td>{{ dueno.email }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary" @click.stop="seleccionarDueno(dueno)">Seleccionar</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal para seleccionar veterinario -->
+            <div class="modal" tabindex="-1" id="mdlSeleccionarVeterinario">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Seleccionar Veterinario</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" v-model="filtroVeterinario" placeholder="Buscar por nombre, DNI o especialidad..." @keyup.enter="aplicarFiltroVeterinario">
+                                        <button class="btn btn-outline-secondary" @click="aplicarFiltroVeterinario">Buscar</button>
+                                        <button class="btn btn-outline-danger" @click="limpiarFiltroVeterinario" v-if="filtroVeterinario">Limpiar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>DNI</th>
+                                            <th>Nombres</th>
+                                            <th>Apellidos</th>
+                                            <th>Teléfono</th>
+                                            <th>Email</th>
+                                            <th>Especialidad</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="veterinario in veterinariosFiltrados" @click="seleccionarVeterinario(veterinario)" style="cursor: pointer;">
+                                            <td>{{ veterinario.usuario.dni }}</td>
+                                            <td>{{ veterinario.usuario.nombres }}</td>
+                                            <td>{{ veterinario.usuario.apellidos }}</td>
+                                            <td>{{ veterinario.usuario.telefono }}</td>
+                                            <td>{{ veterinario.usuario.email }}</td>
+                                            <td>{{ veterinario.especialidad }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary" @click.stop="seleccionarVeterinario(veterinario)">Seleccionar</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal para seleccionar motivo de cita -->
+            <div class="modal" tabindex="-1" id="mdlSeleccionarMotivo">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Seleccionar Motivo de Cita</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" v-model="filtroMotivo" placeholder="Buscar por nombre..." @keyup.enter="aplicarFiltroMotivo">
+                                        <button class="btn btn-outline-secondary" @click="aplicarFiltroMotivo">Buscar</button>
+                                        <button class="btn btn-outline-danger" @click="limpiarFiltroMotivo" v-if="filtroMotivo">Limpiar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th>Descripción</th>
+                                            <th>Precio</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="motivo in motivosFiltrados" @click="seleccionarMotivo(motivo)" style="cursor: pointer;">
+                                            <td>{{ motivo.nombre }}</td>
+                                            <td>{{ motivo.descripcion }}</td>
+                                            <td>S/ {{ motivo.precio }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary" @click.stop="seleccionarMotivo(motivo)">Seleccionar</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script layout:fragment="script">
+            console.log('DASHBOARD SCRIPT CARGADO');
+            new Vue({
+                el: "#app",
+                data: {
+                    entidades: [],
+                    entidad: {
+                        dueno: {id: null},
+                        mascota: {id: null},
+                        veterinario: {id: null},
+                        observaciones: '',
+                        detalleCita: {
+                            motivo_cita: {id: null}
+                        }
+                    },
+                    duenos: [],
+                    mascotas: [],
+                    veterinarios: [],
+                    motivosCita: [],
+                    filtro: '',
+                    entidadesOriginales: [],
+                    filtroDueno: '',
+                    duenosFiltrados: [],
+                    filtroMotivo: '',
+                    motivosFiltrados: [],
+                    filtroVeterinario: '',
+                    veterinariosFiltrados: [],
+                    ordenFecha: null,
+                    mostrarCompletadas: false
+                },
+                computed: {
+                    mascotasFiltradas: function() {
+                        if (!this.entidad.dueno.id) {
+                            return [];
+                        }
+                        return this.mascotas.filter(mascota => mascota.dueno.id === this.entidad.dueno.id);
+                    },
+                    citasSinCompletarCount() {
+                        return this.entidades.filter(item => item && item.estado !== 'Completada').length;
+                    },
+                    citasCompletadasCount() {
+                        return this.entidades.filter(item => item && item.estado === 'Completada').length;
+                    }
+                },
+                methods: {
+                    getNombreDueno: function(id) {
+                        if (!id) return 'Sin dueño';
+                        const dueno = this.duenos.find(d => d.id === id);
+                        return dueno ? (dueno.nombres + ' ' + dueno.apellidos) : 'Desconocido';
+                    },
+                    getNombreMascota: function(id) {
+                        if (!id) return 'Sin mascota';
+                        const mascota = this.mascotas.find(d => d.id === id);
+                        return mascota ? (mascota.nombre + '-' + mascota.especie) : 'Desconocido';
+                    },
+                    getNombreVeterinario: function(id) {
+                        if (!id) return 'Sin veterinario';
+                        const veterinario = this.veterinarios.find(d => d.id === id);
+                        return veterinario ? (veterinario.usuario.nombres + ' ' + veterinario.usuario.apellidos) : 'Desconocido';
+                    },
+                    getMotivoCita: function(citaId) {
+                        const cita = this.entidades.find(c => c.id === citaId);
+                        if (cita && cita.detalleCita && cita.detalleCita.motivo_cita) {
+                            return cita.detalleCita.motivo_cita.nombre;
+                        }
+                        return 'Sin motivo';
+                    },
+                    getNombreDuenoSeleccionado: function() {
+                        console.log('getNombreDuenoSeleccionado - entidad.dueno.id:', this.entidad.dueno.id);
+                        if (!this.entidad.dueno.id) return '';
+                        const dueno = this.duenos.find(d => d.id === this.entidad.dueno.id);
+                        console.log('getNombreDuenoSeleccionado - dueno encontrado:', dueno);
+                        return dueno ? `${dueno.nombres} ${dueno.apellidos} (${dueno.dni})` : '';
+                    },
+                    getNombreMotivoSeleccionado: function() {
+                        console.log('getNombreMotivoSeleccionado - entidad.detalleCita.motivo_cita.id:', this.entidad.detalleCita.motivo_cita.id);
+                        if (!this.entidad.detalleCita.motivo_cita.id) return '';
+                        const motivo = this.motivosCita.find(m => m.id === this.entidad.detalleCita.motivo_cita.id);
+                        console.log('getNombreMotivoSeleccionado - motivo encontrado:', motivo);
+                        return motivo ? `${motivo.nombre} - S/ ${motivo.precio}` : '';
+                    },
+                    getNombreVeterinarioSeleccionado: function() {
+                        console.log('getNombreVeterinarioSeleccionado - entidad.veterinario.id:', this.entidad.veterinario.id);
+                        if (!this.entidad.veterinario.id) return '';
+                        const veterinario = this.veterinarios.find(v => v.id === this.entidad.veterinario.id);
+                        console.log('getNombreVeterinarioSeleccionado - veterinario encontrado:', veterinario);
+                        return veterinario ? `${veterinario.usuario.nombres} ${veterinario.usuario.apellidos} (${veterinario.usuario.dni})` : '';
+                    },
+                    listarMascotas: function () {
+                        this.$http.get('/api/Mascota')
+                            .then(response => {
+                                this.mascotas = response.data;
+                                console.log('Mascotas:', this.mascotas);
+                            })
+                            .catch(error => {
+                                console.error('Problema al cargar mascotas:', error.response ? error.response.data : error);
+                            });
+                    },
+                    listarDuenos: function () {
+                        this.$http.get('/api/duenos')
+                            .then(response => {
+                                // El endpoint ahora retorna una lista de DuenoDTO
+                                this.duenos = response.data;
+                                console.log('Duenos:', this.duenos);
+                            })
+                            .catch(error => {
+                                console.error('Problema al cargar duenos:', error.response ? error.response.data : error);
+                            });
+                    },
+                    listar: function () {
+                        this.$http.get('/api/Cita').then(response => {
+                            console.log('Citas cargadas:', response.data);
+                            // Clean the data to remove circular references
+                            const cleanedData = response.data.map(cita => {
+                                const cleanCita = { ...cita };
+                                if (cleanCita.detalleCita && cleanCita.detalleCita.cita) {
+                                    // Remove the circular reference
+                                    delete cleanCita.detalleCita.cita;
+                                }
+                                return cleanCita;
+                            });
+                            this.entidadesOriginales = cleanedData;
+                            this.entidades = cleanedData;
+                        }).catch(error => {
+                            console.error('Error al cargar citas:', error.response ? error.response.data : error);
+                        });
+                    },
+                    nuevo: function () {
+                        this.entidad = {
+                            id: 0,
+                            fecha: null,
+                            hora: null,
+                            mascota: {id: null},
+                            veterinario: {id: null},
+                            estado: "Pendiente",
+                            dueno: { id: null},
+                            observaciones: '',
+                            detalleCita: {
+                                motivo_cita: {id: null}
+                            }
+                        };
+                        console.log('Nueva cita inicializada:', this.entidad);
+                        $("#mdlEntidad").modal("show");
+                    },
+                    editar: function (id) {
+                        this.$http.get('/api/Cita/' + id).then(response => {
+                            const cita = response.data;
+                            // Cargar los datos de la cita
+                            this.entidad = {
+                                id: cita.id,
+                                fecha: cita.fecha,
+                                hora: cita.hora,
+                                estado: cita.estado,
+                                observaciones: cita.observaciones || '',
+                                dueno: { id: (cita.dueno && cita.dueno.id) ? cita.dueno.id : null },
+                                mascota: { id: (cita.mascota && cita.mascota.id) ? cita.mascota.id : null },
+                                veterinario: { id: (cita.veterinario && cita.veterinario.id) ? cita.veterinario.id : null },
+                                detalleCita: {
+                                    motivo_cita: { 
+                                        id: (cita.detalleCita && cita.detalleCita.motivo_cita && cita.detalleCita.motivo_cita.id) ? cita.detalleCita.motivo_cita.id : null 
+                                    }
+                                }
+                            };
+                            console.log('Cita cargada para editar:', this.entidad);
+                            $("#mdlEntidad").modal("show");
+                        }).catch(error => {
+                            console.error('Error al cargar cita para editar:', error.response ? error.response.data : error);
+                            alert('Error al cargar los datos de la cita. Por favor, intente nuevamente.');
+                        });
+                    },
+                    guardar: function () {
+                        // Preparar los datos para enviar
+                        const datosCita = {
+                            fecha: this.entidad.fecha,
+                            hora: this.entidad.hora,
+                            estado: this.entidad.estado,
+                            observaciones: this.entidad.observaciones,
+                            dueno: { id: this.entidad.dueno.id },
+                            mascota: { id: this.entidad.mascota.id },
+                            veterinario: { id: this.entidad.veterinario.id },
+                            detalleCita: {
+                                motivo_cita: { id: this.entidad.detalleCita.motivo_cita.id }
+                            }
+                        };
+                        
+                        this.$http.post('/api/Cita', datosCita).then(response => {
+                            this.listar();
+                            $("#mdlEntidad").modal("hide");
+                        }).catch(error => {
+                            console.error('Error al guardar cita:', error.response ? error.response.data : error);
+                            alert('Error al guardar la cita. Por favor, verifique los datos.');
+                        });
+                    },
+                    actualizar: function () {
+                        // Preparar los datos para enviar
+                        const datosCita = {
+                            id: this.entidad.id,
+                            fecha: this.entidad.fecha,
+                            hora: this.entidad.hora,
+                            estado: this.entidad.estado,
+                            observaciones: this.entidad.observaciones,
+                            dueno: { id: this.entidad.dueno.id },
+                            mascota: { id: this.entidad.mascota.id },
+                            veterinario: { id: this.entidad.veterinario.id },
+                            detalleCita: {
+                                motivo_cita: { id: this.entidad.detalleCita.motivo_cita.id }
+                            }
+                        };
+                        
+                        this.$http.put('/api/Cita/' + this.entidad.id, datosCita).then(response => {
+                            this.listar();
+                            $("#mdlEntidad").modal("hide");
+                        }).catch(error => {
+                            console.error('Error al actualizar cita:', error.response ? error.response.data : error);
+                            alert('Error al actualizar la cita. Por favor, verifique los datos.');
+                        });
+                    },
+                    eliminar: function (id) {
+                        this.entidad.id = id;
+                        $("#mdlEliminar").modal("show");
+                    },
+                    confimareliminacion: function () {
+                        this.$http.delete('/api/Cita/' + this.entidad.id).then(response => {
+                            this.listar();
+                            $("#mdlEliminar").modal("hide");
+                            alert('Cita eliminada exitosamente');
+                        }).catch(error => {
+                            console.error('Error al eliminar cita:', error.response ? error.response.data : error);
+                            alert('Error al eliminar la cita. Por favor, intente nuevamente.');
+                        });
+                    },
+                    onDuenoChange: function () {
+                        // Reset mascota selection when dueno changes
+                        this.entidad.mascota.id = null;
+                    },
+                    aplicarFiltro: function () {
+                        if (!this.filtro.trim()) {
+                            this.entidades = this.entidadesOriginales;
+                            // Mantener el orden de fecha si está activo
+                            if (this.ordenFecha) {
+                                this.ordenarPorFecha(this.ordenFecha);
+                            }
+                            return;
+                        }
+                        
+                        const filtroLower = this.filtro.toLowerCase();
+                        let citasFiltradas = this.entidadesOriginales.filter(cita => {
+                            // Buscar por DNI del dueño
+                            const dueno = this.duenos.find(d => d.id === cita.dueno.id);
+                            if (dueno && dueno.dni && dueno.dni.toLowerCase().includes(filtroLower)) {
+                                return true;
+                            }
+                            
+                            // Buscar por nombre del dueño
+                            if (dueno && dueno.nombres && dueno.nombres.toLowerCase().includes(filtroLower)) {
+                                return true;
+                            }
+                            if (dueno && dueno.apellidos && dueno.apellidos.toLowerCase().includes(filtroLower)) {
+                                return true;
+                            }
+                            
+                            // Buscar por fecha de cita
+                            if (cita.fecha && cita.fecha.toLowerCase().includes(filtroLower)) {
+                                return true;
+                            }
+                            
+                            // Buscar por nombre del veterinario
+                            const veterinario = this.veterinarios.find(v => v.id === cita.veterinario.id);
+                            if (veterinario && veterinario.usuario.nombres && veterinario.usuario.nombres.toLowerCase().includes(filtroLower)) {
+                                return true;
+                            }
+                            if (veterinario && veterinario.usuario.apellidos && veterinario.usuario.apellidos.toLowerCase().includes(filtroLower)) {
+                                return true;
+                            }
+                            
+                            // Buscar por motivo de cita (si existe)
+                            if (cita.detalleCita && cita.detalleCita.motivo_cita && cita.detalleCita.motivo_cita.nombre && cita.detalleCita.motivo_cita.nombre.toLowerCase().includes(filtroLower)) {
+                                return true;
+                            }
+                            
+                            return false;
+                        });
+                        
+                        // Aplicar orden de fecha si está activo
+                        if (this.ordenFecha) {
+                            citasFiltradas.sort((a, b) => {
+                                const fechaA = new Date(a.fecha + ' ' + a.hora);
+                                const fechaB = new Date(b.fecha + ' ' + b.hora);
+                                
+                                if (this.ordenFecha === 'asc') {
+                                    return fechaA - fechaB; // Más reciente primero
+                                } else {
+                                    return fechaB - fechaA; // Más antigua primero
+                                }
+                            });
+                        }
+                        
+                        this.entidades = citasFiltradas;
+                    },
+                    limpiarFiltro: function () {
+                        this.filtro = '';
+                        this.ordenFecha = null;
+                        this.entidades = this.entidadesOriginales;
+                    },
+                    ordenarPorFecha: function(direccion) {
+                        this.ordenFecha = direccion;
+                        
+                        // Aplicar el filtro de texto si existe
+                        let citasFiltradas = this.entidadesOriginales;
+                        if (this.filtro.trim()) {
+                            const filtroLower = this.filtro.toLowerCase();
+                            citasFiltradas = this.entidadesOriginales.filter(cita => {
+                                // Buscar por DNI del dueño
+                                const dueno = this.duenos.find(d => d.id === cita.dueno.id);
+                                if (dueno && dueno.dni && dueno.dni.toLowerCase().includes(filtroLower)) {
+                                    return true;
+                                }
+                                
+                                // Buscar por nombre del dueño
+                                if (dueno && dueno.nombres && dueno.nombres.toLowerCase().includes(filtroLower)) {
+                                    return true;
+                                }
+                                if (dueno && dueno.apellidos && dueno.apellidos.toLowerCase().includes(filtroLower)) {
+                                    return true;
+                                }
+                                
+                                // Buscar por fecha de cita
+                                if (cita.fecha && cita.fecha.toLowerCase().includes(filtroLower)) {
+                                    return true;
+                                }
+                                
+                                // Buscar por nombre del veterinario
+                                const veterinario = this.veterinarios.find(v => v.id === cita.veterinario.id);
+                                if (veterinario && veterinario.usuario.nombres && veterinario.usuario.nombres.toLowerCase().includes(filtroLower)) {
+                                    return true;
+                                }
+                                if (veterinario && veterinario.usuario.apellidos && veterinario.usuario.apellidos.toLowerCase().includes(filtroLower)) {
+                                    return true;
+                                }
+                                
+                                // Buscar por motivo de cita (si existe)
+                                if (cita.detalleCita && cita.detalleCita.motivo_cita && cita.detalleCita.motivo_cita.nombre && cita.detalleCita.motivo_cita.nombre.toLowerCase().includes(filtroLower)) {
+                                    return true;
+                                }
+                                
+                                return false;
+                            });
+                        }
+                        
+                        // Ordenar por fecha
+                        citasFiltradas.sort((a, b) => {
+                            const fechaA = new Date(a.fecha + ' ' + a.hora);
+                            const fechaB = new Date(b.fecha + ' ' + b.hora);
+                            
+                            if (direccion === 'asc') {
+                                return fechaA - fechaB; // Más reciente primero
+                            } else {
+                                return fechaB - fechaA; // Más antigua primero
+                            }
+                        });
+                        
+                        this.entidades = citasFiltradas;
+                    },
+                    abrirModalDueno: function() {
+                        this.duenosFiltrados = this.duenos;
+                        this.filtroDueno = '';
+                        $("#mdlSeleccionarDueno").modal("show");
+                    },
+                    aplicarFiltroDueno: function() {
+                        if (!this.filtroDueno.trim()) {
+                            this.duenosFiltrados = this.duenos;
+                            return;
+                        }
+                        
+                        const filtroLower = this.filtroDueno.toLowerCase();
+                        this.duenosFiltrados = this.duenos.filter(dueno => {
+                            return (dueno.dni && dueno.dni.toLowerCase().includes(filtroLower)) ||
+                                   (dueno.nombres && dueno.nombres.toLowerCase().includes(filtroLower)) ||
+                                   (dueno.apellidos && dueno.apellidos.toLowerCase().includes(filtroLower));
+                        });
+                    },
+                    limpiarFiltroDueno: function() {
+                        this.filtroDueno = '';
+                        this.duenosFiltrados = this.duenos;
+                    },
+                    seleccionarDueno: function(dueno) {
+                        console.log('seleccionarDueno llamado con:', dueno);
+                        this.entidad.dueno.id = dueno.id;
+                        this.entidad.mascota.id = null; // Reset mascota selection
+                        console.log('entidad después de seleccionar dueno:', this.entidad);
+                        $("#mdlSeleccionarDueno").modal("hide");
+                    },
+                    abrirModalMotivo: function() {
+                        this.motivosFiltrados = this.motivosCita;
+                        this.filtroMotivo = '';
+                        $("#mdlSeleccionarMotivo").modal("show");
+                    },
+                    aplicarFiltroMotivo: function() {
+                        if (!this.filtroMotivo.trim()) {
+                            this.motivosFiltrados = this.motivosCita;
+                            return;
+                        }
+                        
+                        const filtroLower = this.filtroMotivo.toLowerCase();
+                        this.motivosFiltrados = this.motivosCita.filter(motivo => {
+                            return motivo.nombre && motivo.nombre.toLowerCase().includes(filtroLower);
+                        });
+                    },
+                    limpiarFiltroMotivo: function() {
+                        this.filtroMotivo = '';
+                        this.motivosFiltrados = this.motivosCita;
+                    },
+                    seleccionarMotivo: function(motivo) {
+                        console.log('seleccionarMotivo llamado con:', motivo);
+                        this.entidad.detalleCita.motivo_cita.id = motivo.id;
+                        console.log('entidad después de seleccionar motivo:', this.entidad);
+                        $("#mdlSeleccionarMotivo").modal("hide");
+                    },
+                    abrirModalVeterinario: function() {
+                        this.veterinariosFiltrados = this.veterinarios;
+                        this.filtroVeterinario = '';
+                        $("#mdlSeleccionarVeterinario").modal("show");
+                    },
+                    aplicarFiltroVeterinario: function() {
+                        if (!this.filtroVeterinario.trim()) {
+                            this.veterinariosFiltrados = this.veterinarios;
+                            return;
+                        }
+                        const filtroLower = this.filtroVeterinario.toLowerCase();
+                        this.veterinariosFiltrados = this.veterinarios.filter(veterinario => {
+                            return (veterinario.usuario.dni && veterinario.usuario.dni.toLowerCase().includes(filtroLower)) ||
+                                   (veterinario.usuario.nombres && veterinario.usuario.nombres.toLowerCase().includes(filtroLower)) ||
+                                   (veterinario.usuario.apellidos && veterinario.usuario.apellidos.toLowerCase().includes(filtroLower)) ||
+                                   (veterinario.especialidad && veterinario.especialidad.toLowerCase().includes(filtroLower));
+                        });
+                    },
+                    limpiarFiltroVeterinario: function() {
+                        this.filtroVeterinario = '';
+                        this.veterinariosFiltrados = this.veterinarios;
+                    },
+                    seleccionarVeterinario: function(veterinario) {
+                        console.log('seleccionarVeterinario llamado con:', veterinario);
+                        this.entidad.veterinario.id = veterinario.id;
+                        console.log('entidad después de seleccionar veterinario:', this.entidad);
+                        $("#mdlSeleccionarVeterinario").modal("hide");
+                    },
+                    listarVeterinarios: function () {
+                        this.$http.get('/api/Veterinario')
+                            .then(response => {
+                                this.veterinarios = response.data;
+                                console.log('Veterinarios:', this.veterinarios);
+                            })
+                            .catch(error => {
+                                console.error('Problema al cargar veterinarios:', error.response ? error.response.data : error);
+                            });
+                    },
+                    listarMotivosCita: function () {
+                        this.$http.get('/api/motivos-cita')
+                            .then(response => {
+                                this.motivosCita = response.data;
+                                console.log('Motivos de cita:', this.motivosCita);
+                            })
+                            .catch(error => {
+                                console.error('Problema al cargar motivos de cita:', error.response ? error.response.data : error);
+                            });
+                    },
+                    cambiarEstado: function(item) {
+                        // Update the cita in the backend
+                        this.$http.put('/api/Cita/' + item.id, item)
+                            .then(response => {
+                                // Optionally, refresh the list or show a success message
+                                this.listar();
+                            })
+                            .catch(error => {
+                                alert('Error al actualizar el estado');
+                                console.error(error);
+                            });
+                    }
+                },
+                mounted: function () {
+                    // Check for citaId in the URL and load for editing if present
+                    const params = new URLSearchParams(window.location.search);
+                    const citaId = params.get('citaId');
+                    if (citaId) {
+                        this.editar(citaId);
+                    }
+                    this.listar();
+                    this.listarDuenos();
+                    this.listarMascotas();
+                    this.listarVeterinarios();
+                    this.listarMotivosCita();
+                }
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,47 @@
+<html layout:decorate="_layout">
+    <head>
+        <title>Login - UTP VetGes</title>
+    </head>
+    <body>
+        <div layout:fragment="content">
+            <div class="container mt-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header text-center">
+                                <h3>Iniciar Sesión</h3>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${error}" class="alert alert-danger" role="alert">
+                                    <span th:text="${error}"></span>
+                                </div>
+                                <div th:if="${success}" class="alert alert-success" role="alert">
+                                    <span th:text="${success}"></span>
+                                </div>
+                                
+                                <form th:action="@{/login}" method="post">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">Contraseña</label>
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                                    </div>
+                                </form>
+                                
+                                <div class="text-center mt-3">
+                                    <p>¿No tienes cuenta? <a th:href="@{/register}">Regístrate aquí</a></p>
+                                    <p><a th:href="@{/forgot-password}">¿Olvidaste tu contraseña?</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html> 

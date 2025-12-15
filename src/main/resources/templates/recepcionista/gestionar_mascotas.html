@@ -1,0 +1,333 @@
+<html layout:decorate="_layoutRecepcionista">
+<head>
+    <title>Gestionar Mascotas</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <h2>Gestionar Mascotas</h2>
+        <div class="card mb-4">
+            <div class="card-header">Registrar Nueva Mascota</div>
+            <div class="card-body">
+                <form id="nuevaMascotaForm">
+                    <input type="hidden" name="mascota_id" id="mascotaIdEdit" />
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="Nombre" name="nombre" required />
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="Especie" name="especie" required />
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="Raza" name="raza" required />
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" placeholder="Edad" name="edad" min="0" required />
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" id="duenoSeleccionado" placeholder="Seleccione un dueño" readonly required />
+                            <input type="hidden" name="dueno_id" id="duenoIdSeleccionado" required />
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="abrirModalDueno()">Seleccionar Dueño</button>
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-success w-100" id="btnRegistrarMascota">Registrar Mascota</button>
+                            <button type="button" class="btn btn-primary w-100 d-none" id="btnActualizarMascota" onclick="actualizarMascota()">Actualizar Mascota</button>
+                            <button type="button" class="btn btn-secondary w-100 d-none" id="btnCancelarEdicion" onclick="cancelarEdicionMascota()">Cancelar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Lista de Mascotas</span>
+                <input type="text" id="filtroMascotas" class="form-control w-25" placeholder="Filtrar mascotas..." />
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Especie</th>
+                                <th>Raza</th>
+                                <th>Edad</th>
+                                <th>Dueño</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mascotasTbody">
+                            <!-- Mascotas will be rendered here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal para seleccionar dueño (igual que en FormularioGestionCitas) -->
+    <div class="modal" tabindex="-1" id="mdlSeleccionarDueno">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Seleccionar Dueño</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="filtroDueno" placeholder="Buscar por nombre o DNI..." />
+                                <button class="btn btn-outline-secondary" type="button" onclick="aplicarFiltroDueno()">Buscar</button>
+                                <button class="btn btn-outline-danger" type="button" onclick="limpiarFiltroDueno()">Limpiar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>DNI</th>
+                                    <th>Nombres</th>
+                                    <th>Apellidos</th>
+                                    <th>Celular</th>
+                                    <th>Email</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="duenosTbody">
+                                <!-- Duenos will be rendered here by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // --- Mascotas ---
+        function fetchMascotas() {
+            fetch('/api/Mascota')
+                .then(res => res.json())
+                .then(data => {
+                    window.mascotas = data;
+                    renderMascotas();
+                });
+        }
+        function renderMascotas() {
+            const filtro = document.getElementById('filtroMascotas').value.toLowerCase();
+            const tbody = document.getElementById('mascotasTbody');
+            tbody.innerHTML = '';
+            window.mascotas.filter(m => {
+                // Filtro por campos de la mascota
+                const matchMascota = (m.nombre && m.nombre.toLowerCase().includes(filtro)) ||
+                                   (m.especie && m.especie.toLowerCase().includes(filtro)) ||
+                                   (m.raza && m.raza.toLowerCase().includes(filtro)) ||
+                                   (m.edad !== undefined && m.edad !== null && m.edad.toString().includes(filtro));
+                
+                // Filtro por nombre del dueño
+                const matchDueno = m.dueno && m.dueno.usuario && 
+                                 ((m.dueno.usuario.nombres && m.dueno.usuario.nombres.toLowerCase().includes(filtro)) ||
+                                  (m.dueno.usuario.apellidos && m.dueno.usuario.apellidos.toLowerCase().includes(filtro)) ||
+                                  (m.dueno.usuario.dni && m.dueno.usuario.dni.toLowerCase().includes(filtro)));
+                
+                return matchMascota || matchDueno;
+            }).forEach(m => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${m.nombre}</td>
+                    <td>${m.especie}</td>
+                    <td>${m.raza}</td>
+                    <td>${m.edad !== undefined && m.edad !== null ? m.edad : ''}</td>
+                    <td>${m.dueno && m.dueno.usuario ? (m.dueno.usuario.nombres + ' ' + m.dueno.usuario.apellidos + ' (' + m.dueno.usuario.dni + ')') : ''}</td>
+                    <td>
+                        <button class='btn btn-sm btn-primary' onclick='editarMascota(${m.id})'>Editar</button>
+                        <button class='btn btn-sm btn-danger' onclick='eliminarMascota(${m.id})'>Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('filtroMascotas').addEventListener('input', renderMascotas);
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchMascotas();
+            fetchDuenos();
+        });
+        // --- Dueños (para modal) ---
+        function fetchDuenos() {
+            fetch('/api/duenos')
+                .then(res => res.json())
+                .then(data => {
+                    window.duenos = data;
+                    renderDuenos();
+                });
+        }
+        function renderDuenos() {
+            const filtro = document.getElementById('filtroDueno').value.toLowerCase();
+            const tbody = document.getElementById('duenosTbody');
+            tbody.innerHTML = '';
+            window.duenos.filter(d =>
+                (d.nombres && d.nombres.toLowerCase().includes(filtro)) ||
+                (d.apellidos && d.apellidos.toLowerCase().includes(filtro)) ||
+                (d.dni && d.dni.toLowerCase().includes(filtro))
+            ).forEach(d => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${d.dni}</td>
+                    <td>${d.nombres}</td>
+                    <td>${d.apellidos}</td>
+                    <td>${d.celular || ''}</td>
+                    <td>${d.email || ''}</td>
+                    <td><button class='btn btn-sm btn-primary' type='button' onclick='seleccionarDueno(${d.id})'>Seleccionar</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        function abrirModalDueno() {
+            renderDuenos();
+            document.getElementById('mdlSeleccionarDueno').style.display = 'block';
+            $("#mdlSeleccionarDueno").modal("show");
+        }
+        function seleccionarDueno(id) {
+            const dueno = window.duenos.find(d => d.id === id);
+            if (dueno) {
+                document.getElementById('duenoSeleccionado').value = dueno.nombres + ' ' + dueno.apellidos + ' (' + dueno.dni + ')';
+                document.getElementById('duenoIdSeleccionado').value = dueno.id;
+                $("#mdlSeleccionarDueno").modal("hide");
+            }
+        }
+        function aplicarFiltroDueno() {
+            renderDuenos();
+        }
+        function limpiarFiltroDueno() {
+            document.getElementById('filtroDueno').value = '';
+            renderDuenos();
+        }
+        // --- Registrar Mascota ---
+        document.getElementById('nuevaMascotaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            if (!form.dueno_id.value) {
+                alert('Debe seleccionar un dueño');
+                return;
+            }
+            if (form.mascota_id.value) {
+                // Está en modo edición, usar PUT
+                actualizarMascota();
+                return;
+            }
+            const data = {
+                nombre: form.nombre.value,
+                especie: form.especie.value,
+                raza: form.raza.value,
+                edad: form.edad.value ? parseInt(form.edad.value) : null,
+                dueno: { id: form.dueno_id.value }
+            };
+            fetch('/recepcionista/mascotas/enroll', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(resp => {
+                if (resp.success) {
+                    alert('Mascota registrada exitosamente');
+                    fetchMascotas();
+                    form.reset();
+                    document.getElementById('duenoSeleccionado').value = '';
+                    document.getElementById('duenoIdSeleccionado').value = '';
+                } else {
+                    alert('Error: ' + resp.error);
+                }
+            })
+            .catch(err => alert('Error en la solicitud: ' + err));
+        });
+        // --- Edición de Mascota ---
+        function editarMascota(id) {
+            const mascota = window.mascotas.find(m => m.id === id);
+            if (!mascota) return;
+            const form = document.getElementById('nuevaMascotaForm');
+            form.mascota_id.value = mascota.id;
+            form.nombre.value = mascota.nombre;
+            form.especie.value = mascota.especie;
+            form.raza.value = mascota.raza;
+            form.edad.value = mascota.edad;
+            if (mascota.dueno && mascota.dueno.usuario) {
+                document.getElementById('duenoSeleccionado').value = mascota.dueno.usuario.nombres + ' ' + mascota.dueno.usuario.apellidos + ' (' + mascota.dueno.usuario.dni + ')';
+                document.getElementById('duenoIdSeleccionado').value = mascota.dueno.id;
+            }
+            document.getElementById('btnRegistrarMascota').classList.add('d-none');
+            document.getElementById('btnActualizarMascota').classList.remove('d-none');
+            document.getElementById('btnCancelarEdicion').classList.remove('d-none');
+        }
+        function actualizarMascota() {
+            const form = document.getElementById('nuevaMascotaForm');
+            const id = form.mascota_id.value;
+            if (!id) return;
+            const data = {
+                nombre: form.nombre.value,
+                especie: form.especie.value,
+                raza: form.raza.value,
+                edad: form.edad.value ? parseInt(form.edad.value) : null,
+                dueno: { id: form.dueno_id.value }
+            };
+            fetch('/api/Mascota/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => {
+                if (res.ok) return res.json();
+                throw new Error('Error al actualizar la mascota');
+            })
+            .then(resp => {
+                alert('Mascota actualizada exitosamente');
+                fetchMascotas();
+                form.reset();
+                document.getElementById('duenoSeleccionado').value = '';
+                document.getElementById('duenoIdSeleccionado').value = '';
+                document.getElementById('btnRegistrarMascota').classList.remove('d-none');
+                document.getElementById('btnActualizarMascota').classList.add('d-none');
+                document.getElementById('btnCancelarEdicion').classList.add('d-none');
+                form.mascota_id.value = '';
+            })
+            .catch(err => alert('Error: ' + err));
+        }
+        function cancelarEdicionMascota() {
+            const form = document.getElementById('nuevaMascotaForm');
+            form.reset();
+            document.getElementById('duenoSeleccionado').value = '';
+            document.getElementById('duenoIdSeleccionado').value = '';
+            document.getElementById('btnRegistrarMascota').classList.remove('d-none');
+            document.getElementById('btnActualizarMascota').classList.add('d-none');
+            document.getElementById('btnCancelarEdicion').classList.add('d-none');
+            form.mascota_id.value = '';
+        }
+        // --- Eliminar Mascota ---
+        function eliminarMascota(id) {
+            if (!confirm('¿Estás seguro de que deseas eliminar esta mascota?')) return;
+            fetch('/api/Mascota/' + id, {
+                method: 'DELETE'
+            })
+            .then(res => {
+                if (res.ok) {
+                    alert('Mascota eliminada exitosamente');
+                    fetchMascotas();
+                } else {
+                    throw new Error('Error al eliminar la mascota');
+                }
+            })
+            .catch(err => alert('Error: ' + err));
+        }
+    </script>
+</div>
+</body>
+</html> 

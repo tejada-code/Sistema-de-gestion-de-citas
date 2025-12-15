@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html layout:decorate="_layoutVeterinario">
+<head>
+    <title>Pacientes - Veterinario</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <h2 class="mb-4">Consulta de Pacientes</h2>
+        <!-- Selección de mascota -->
+        <div class="card mb-4">
+            <div class="card-header">Selecciona una Mascota (Espere unos segundos porfavor, la carga demora)</div>
+            <div class="card-body">
+                <select class="form-select" id="select-mascota">
+                    <option value="">Selecciona una mascota</option>
+                    <!-- Opciones dinámicas -->
+                </select>
+            </div>
+        </div>
+        <!-- Formulario de datos de la mascota (solo lectura) -->
+        <div class="card mb-4" id="card-datos-mascota" style="display:none;">
+            <div class="card-header">Datos de la Mascota</div>
+            <div class="card-body">
+                <table class="table table-bordered" id="tabla-datos-mascota" style="display:none;">
+                    <tbody>
+                        <tr><th>ID</th><td id="td-id"></td></tr>
+                        <tr><th>Nombre</th><td id="td-nombre"></td></tr>
+                        <tr><th>Especie</th><td id="td-especie"></td></tr>
+                        <tr><th>Raza</th><td id="td-raza"></td></tr>
+                        <tr><th>Edad</th><td id="td-edad"></td></tr>
+                        <tr><th>Dueño</th><td id="td-dueno"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        let mascotasGlobal = [];
+
+        async function cargarMascotas() {
+            console.log('Entrando a cargarMascotas');
+            try {
+                const respCitas = await fetch('http://localhost:8081/api/Cita');
+                if (!respCitas.ok) {
+                    console.error('Error al obtener citas:', respCitas.status, respCitas.statusText);
+                    return;
+                }
+                const citas = await respCitas.json();
+                // Depuración de ids
+                console.log('window.idVeterinario:', window.idVeterinario, typeof window.idVeterinario);
+                const idVeterinario = Number(window.idVeterinario) || 7;
+                console.log('idVeterinario usado:', idVeterinario, typeof idVeterinario);
+                console.log('Ejemplo de cita:', citas[0]);
+
+                // Filtrar solo las citas del veterinario logueado y con mascota
+                const citasConMascota = citas.filter(c =>
+                    c.mascota && c.mascota.id &&
+                    c.veterinario && Number(c.veterinario.id) === idVeterinario
+                );
+                console.log('Citas con mascota y veterinario filtradas:', citasConMascota);
+
+                // Obtener mascotas únicas
+                const mascotasMap = {};
+                citasConMascota.forEach(c => {
+                    mascotasMap[c.mascota.id] = c.mascota;
+                });
+                const mascotas = Object.values(mascotasMap);
+                console.log('Mascotas encontradas:', mascotas);
+
+                // Llenar el selector
+                const selectMascota = document.getElementById('select-mascota');
+                if (mascotas.length === 0) {
+                    selectMascota.innerHTML = '<option value=\"\">No hay pacientes con cita</option>';
+                    return;
+                }
+                selectMascota.innerHTML = '<option value=\"">Selecciona una mascota</option>';
+                mascotas.forEach(m => {
+                    const option = document.createElement('option');
+                    option.value = m.id;
+                    option.textContent = m.nombre;
+                    selectMascota.appendChild(option);
+                });
+                mascotasGlobal = mascotas; 
+            } catch (error) {
+                console.error('Error en cargarMascotas:', error);
+            }
+        }
+
+        async function mostrarDatosMascota(mascotaId) {
+            const cardDatosMascota = document.getElementById('card-datos-mascota');
+            const tablaDatosMascota = document.getElementById('tabla-datos-mascota');
+            if (!mascotaId) {
+                cardDatosMascota.style.display = 'none';
+                tablaDatosMascota.style.display = 'none';
+                return;
+            }
+            const mascota = mascotasGlobal.find(m => m.id == mascotaId);
+            if (!mascota) {
+                cardDatosMascota.style.display = 'none';
+                tablaDatosMascota.style.display = 'none';
+                return;
+            }
+            document.getElementById('td-id').textContent = mascota.id || '';
+            document.getElementById('td-nombre').textContent = mascota.nombre || '';
+            document.getElementById('td-especie').textContent = mascota.especie || '';
+            document.getElementById('td-raza').textContent = mascota.raza || '';
+            document.getElementById('td-edad').textContent = mascota.edad || '';
+            // Obtener nombre del dueño
+            let duenoNombre = '';
+            if (mascota.dueno && mascota.dueno.usuario) {
+                duenoNombre = (mascota.dueno.usuario.nombres || '') + ' ' + (mascota.dueno.usuario.apellidos || '');
+            }
+            document.getElementById('td-dueno').textContent = duenoNombre;
+            cardDatosMascota.style.display = 'block';
+            tablaDatosMascota.style.display = '';
+        }
+
+        // Evento al seleccionar mascota
+        const selectMascota = document.getElementById('select-mascota');
+        selectMascota.addEventListener('change', function() {
+            mostrarDatosMascota(this.value);
+        });
+
+        window.addEventListener('DOMContentLoaded', cargarMascotas);
+    </script>
+</div>
+</body>
+</html> 

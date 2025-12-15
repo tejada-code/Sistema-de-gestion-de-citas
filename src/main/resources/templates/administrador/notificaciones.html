@@ -1,0 +1,40 @@
+<html layout:decorate="_layoutAdministrador">
+<head>
+    <title>Notificaciones</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <h2 class="fw-bold mb-3">Notificaciones</h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Mensaje</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Aquí se listarán las notificaciones -->
+                    <tr th:each="notificacion : ${notificaciones}">
+                        <td th:text="${notificacion.tipo}">Tipo</td>
+                        <td th:text="${notificacion.mensaje}">Mensaje</td>
+                        <td th:text="${#temporals.format(notificacion.fecha_creacion, 'yyyy-MM-dd HH:mm')}">Fecha</td>
+                        <td>
+                            <button class="btn btn-info btn-sm">Ver</button>
+                            <button class="btn btn-success btn-sm">Marcar como leída</button>
+                            <button class="btn btn-danger btn-sm">Eliminar</button>
+                        </td>
+                    </tr>
+                    <tr th:if="${notificaciones == null or #lists.isEmpty(notificaciones)}">
+                        <td colspan="4" class="text-center">No hay notificaciones para mostrar.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html> 

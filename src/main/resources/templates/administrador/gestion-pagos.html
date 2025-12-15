@@ -1,0 +1,82 @@
+<html layout:decorate="_layoutAdministrador">
+<head>
+    <title>Gestión de Pagos</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <div id="pagos-root" data-clinica-id="[[${clinicaId}]]"></div>
+        <h2 class="fw-bold mb-3">Gestión de Pagos</h2>
+        <div class="mb-3">
+            <button class="btn btn-primary">Registrar Pago</button>
+        </div>
+        <div class="mb-3">
+            <!-- Placeholder para filtros de búsqueda -->
+            <input type="text" class="form-control" placeholder="Buscar por cliente, cita o método de pago...">
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID Pago</th>
+                        <th>Cliente</th>
+                        <th>Mascota</th>
+                        <th>Fecha</th>
+                        <th>Monto</th>
+                        <th>Método</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="pagos-tbody">
+                    <!-- Aquí se listarán los pagos dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const root = document.getElementById('pagos-root');
+    const clinicaId = root.getAttribute('data-clinica-id');
+    const tbody = document.getElementById('pagos-tbody');
+
+    fetch(`/api/pagos/boletas/clinica/${clinicaId}`)
+        .then(response => response.json())
+        .then(pagos => {
+            tbody.innerHTML = '';
+            if (!Array.isArray(pagos) || pagos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay pagos registrados.</td></tr>';
+                return;
+            }
+            pagos.forEach(pago => {
+                const cita = pago.detalle_cita && pago.detalle_cita.cita ? pago.detalle_cita.cita : {};
+                const dueno = cita.dueno && cita.dueno.usuario ? cita.dueno.usuario.nombres + ' ' + cita.dueno.usuario.apellidos : '';
+                const mascota = cita.mascota ? cita.mascota.nombre : '';
+                const fecha = pago.fecha_emision ? pago.fecha_emision.substring(0,10) : '';
+                const estado = cita.estado || '';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pago.id}</td>
+                    <td>${dueno}</td>
+                    <td>${mascota}</td>
+                    <td>${fecha}</td>
+                    <td>S/ ${pago.monto_total != null ? pago.monto_total.toFixed(2) : ''}</td>
+                    <td>${pago.metodo_pago}</td>
+                    <td>${estado}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm">Ver</button>
+                        <button class="btn btn-success btn-sm">Boleta</button>
+                        <button class="btn btn-danger btn-sm">Anular</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        })
+        .catch(err => {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error al cargar los pagos.</td></tr>';
+        });
+});
+</script>
+</body>
+</html> 

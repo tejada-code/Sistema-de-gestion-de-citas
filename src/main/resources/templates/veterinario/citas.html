@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html layout:decorate="_layoutVeterinario"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Mis Citas - Veterinario</title>
+    <style>
+        .btn-blue {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+        }
+        .btn-blue.active, .btn-blue:active, .btn-blue:focus {
+            background-color: #0056b3 !important;
+            color: #fff !important;
+        }
+        .btn-outline-blue {
+            border: 2px solid #007bff;
+            color: #007bff;
+            background: #fff;
+        }
+        .btn-outline-blue.active, .btn-outline-blue:active, .btn-outline-blue:focus {
+            background: #007bff !important;
+            color: #fff !important;
+        }
+        .btn-yellow {
+            background-color: #ffc107;
+            color: #212529;
+            border: none;
+        }
+        .btn-yellow.active, .btn-yellow:active, .btn-yellow:focus {
+            background-color: #e0a800 !important;
+            color: #212529 !important;
+        }
+        .badge-count {
+            background: #ffc107;
+            color: #212529;
+            border-radius: 12px;
+            padding: 2px 10px;
+            font-size: 1rem;
+            margin-left: 6px;
+        }
+        .table-citas th, .table-citas td {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .filter-bar {
+            margin-bottom: 16px;
+        }
+        .btn-group-custom {
+            display: flex;
+            gap: 0;
+        }
+        .btn-group-custom .btn {
+            border-radius: 0;
+        }
+        .btn-group-custom .btn:first-child {
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+        }
+        .btn-group-custom .btn:last-child {
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+        .btn-state-group {
+            display: flex;
+            gap: 0;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .btn-state-group .btn {
+            border-radius: 0;
+            width: 50%;
+        }
+        .btn-state-group .btn:first-child {
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+        }
+        .btn-state-group .btn:last-child {
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4" id="citas-app">
+        <h2 class="mb-4">Mis Citas</h2>
+        <!-- Barra de búsqueda -->
+        <div class="filter-bar">
+            <div class="input-group">
+                <input type="text" class="form-control" v-model="filtro" placeholder="Filtrar por DNI, nombre del dueño, fecha, veterinario o motivo de cita...">
+                <button class="btn btn-outline-secondary" @click="aplicarFiltro">Filtrar</button>
+            </div>
+        </div>
+        <!-- Botones de ordenamiento -->
+        <div class="btn-group-custom mb-2 w-100">
+            <button class="btn btn-blue" :class="{active: orden === 'desc'}" @click="ordenar('desc')">Más reciente</button>
+            <button class="btn btn-blue" :class="{active: orden === 'asc'}" @click="ordenar('asc')">Más antigua</button>
+        </div>
+        <!-- Botones de estado -->
+        <div class="btn-state-group w-100">
+            <button class="btn btn-outline-blue" :class="{active: !verCompletadas}" @click="verCompletadas = false">Citas sin completar <span class="badge-count">{{ citasSinCompletarCount }}</span></button>
+            <button class="btn btn-yellow" :class="{active: verCompletadas}" @click="verCompletadas = true">Ver Citas Completadas <span class="badge-count">{{ citasCompletadasCount }}</span></button>
+        </div>
+        <!-- Tabla de citas -->
+        <div v-if="citasFiltradas.length === 0">
+            <div class="alert alert-info text-center">No hay citas para mostrar.</div>
+        </div>
+        <div v-else class="table-responsive">
+            <table class="table table-bordered table-hover table-citas">
+                <thead class="table-light">
+                    <tr>
+                        <th>Dueño</th>
+                        <th>Mascota</th>
+                        <th>Veterinario</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(cita, index) in citasFiltradas" :key="`${cita.id}-${index}`">
+                        <td>{{ cita.dueno && cita.dueno.usuario ? cita.dueno.usuario.nombres + ' ' + cita.dueno.usuario.apellidos : 'N/A' }}</td>
+                        <td>{{ cita.mascota ? cita.mascota.nombre : 'N/A' }}</td>
+                        <td>{{ cita.veterinario && cita.veterinario.usuario ? cita.veterinario.usuario.nombres + ' ' + cita.veterinario.usuario.apellidos : 'N/A' }}</td>
+                        <td>{{ cita.fecha }}</td>
+                        <td>{{ cita.hora }}</td>
+                        <td>{{ cita.detalleCita && cita.detalleCita.motivo_cita ? cita.detalleCita.motivo_cita.nombre : 'N/A' }}</td>
+                        <td>
+                            <span :class="{
+                                'badge bg-success': cita.estado === 'Completada',
+                                'badge bg-danger': cita.estado === 'Cancelada',
+                                'badge bg-warning': cita.estado === 'En proceso',
+                                'badge bg-secondary': cita.estado === 'Pendiente',
+                                'badge bg-warning': !['Completada','Cancelada','En proceso','Pendiente'].includes(cita.estado)
+                            }">{{ cita.estado }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script th:inline="javascript">
+        window.citasThymeleaf = /*[[${citas}]]*/ [];
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+    <script>
+        new Vue({
+            el: '#citas-app',
+            data: {
+                filtro: '',
+                orden: 'desc',
+                verCompletadas: false,
+                citasOriginal: [],
+                citas: [], 
+            },
+            computed: {
+                citasFiltradas() {
+                    let citas = this.citas.slice();
+                    // Filtrar por estado
+                    citas = citas.filter(cita => {
+                        if (this.verCompletadas) {
+                            return cita.estado && cita.estado.toLowerCase() === 'completada';
+                        } else {
+                            return cita.estado && cita.estado.toLowerCase() !== 'completada';
+                        }
+                    });
+                    // Filtrar por texto
+                    if (this.filtro.trim() !== '') {
+                        const filtroLower = this.filtro.toLowerCase();
+                        citas = citas.filter(cita => {
+                            return (
+                                (cita.dueno && cita.dueno.usuario && (cita.dueno.usuario.nombres + ' ' + cita.dueno.usuario.apellidos).toLowerCase().includes(filtroLower)) ||
+                                (cita.mascota && cita.mascota.nombre && cita.mascota.nombre.toLowerCase().includes(filtroLower)) ||
+                                (cita.veterinario && cita.veterinario.usuario && (cita.veterinario.usuario.nombres + ' ' + cita.veterinario.usuario.apellidos).toLowerCase().includes(filtroLower)) ||
+                                (cita.fecha && cita.fecha.toString().toLowerCase().includes(filtroLower)) ||
+                                (cita.hora && cita.hora.toString().toLowerCase().includes(filtroLower)) ||
+                                (cita.detalleCita && cita.detalleCita.motivo_cita && cita.detalleCita.motivo_cita.nombre && cita.detalleCita.motivo_cita.nombre.toLowerCase().includes(filtroLower)) ||
+                                (cita.estado && cita.estado.toLowerCase().includes(filtroLower))
+                            );
+                        });
+                    }
+                    // Ordenar
+                    citas.sort((a, b) => {
+                        const fechaA = new Date(a.fecha + ' ' + a.hora);
+                        const fechaB = new Date(b.fecha + ' ' + b.hora);
+                        return this.orden === 'desc' ? fechaB - fechaA : fechaA - fechaB;
+                    });
+                    return citas;
+                },
+                citasSinCompletarCount() {
+                    return this.citas.filter(cita => cita.estado !== 'Completada').length;
+                },
+                citasCompletadasCount() {
+                    return this.citas.filter(cita => cita.estado === 'Completada').length;
+                }
+            },
+            methods: {
+                aplicarFiltro() {
+                    // El filtrado es reactivo, este método es solo para UX
+                },
+                ordenar(tipo) {
+                    this.orden = tipo;
+                }
+            },
+            mounted() {
+                console.log('window.citasThymeleaf:', window.citasThymeleaf);
+                this.citas = JSON.parse(JSON.stringify(window.citasThymeleaf || []));
+                this.citasOriginal = this.citas.slice();
+                console.log('this.citas después de asignar:', this.citas);
+            }
+        });
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<html layout:decorate="_layoutRecepcionista">
+    <head>
+        <title>Dashboard - Recepcionista</title>
+    </head>
+    <body>
+        <div layout:fragment="content">
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-12">
+                        <h2>Recepcionista</h2>
+                        <p class="lead">Panel de control para recepcionistas</p>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="icon-calendar" style="font-size: 3rem; color: #fd7e14;"></i>
+                                <h5 class="card-title mt-2">Gestión de Citas</h5>
+                                <p class="card-text">Administra las citas de la clínica</p>
+                                <a href="/GestionesCitas" class="btn btn-primary">Gestionar Citas</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="icon-credit-card" style="font-size: 3rem; color: #28a745;"></i>
+                                <h5 class="card-title mt-2">Gestión de Pagos</h5>
+                                <p class="card-text">Administra los pagos de las citas</p>
+                                <a href="/GestionesPagosCitas" class="btn btn-primary">Gestionar Pagos</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="icon-users" style="font-size: 3rem; color: #17a2b8;"></i>
+                                <h5 class="card-title mt-2">Clientes</h5>
+                                <p class="card-text">Gestiona la información de clientes</p>
+                                <a href="/recepcionista/clientes" class="btn btn-primary">Gestionar Clientes</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="icon-pet" style="font-size: 3rem; color: #ffc107;"></i>
+                                <h5 class="card-title mt-2">Mascotas</h5>
+                                <p class="card-text">Gestiona la información de mascotas</p>
+                                <a href="/recepcionista/mascotas" class="btn btn-primary">Ver Mascotas</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="icon-chart-bar" style="font-size: 3rem; color: #6f42c1;"></i>
+                                <h5 class="card-title mt-2">Reportes</h5>
+                                <p class="card-text">Genera reportes de cierre de caja</p>
+                                <a href="/recepcionista/reportes" class="btn btn-primary">Ver Reportes</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="icon-doc-text" style="font-size: 3rem; color: #dc3545;"></i>
+                                <h5 class="card-title mt-2">Boletas</h5>
+                                <p class="card-text">Consulta y gestiona boletas</p>
+                                <a href="/GestionesPagosCitas" class="btn btn-primary">Ver Boletas</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Citas de Hoy</h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${#lists.isEmpty(citasHoy)}">
+                                    <p class="text-muted">No hay citas programadas para hoy.</p>
+                                </div>
+                                <div th:if="${!#lists.isEmpty(citasHoy)}">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Hora</th>
+                                                    <th>Cliente</th>
+                                                    <th>Mascota</th>
+                                                    <th>Veterinario</th>
+                                                    <th>Estado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="citasHoyTbody">
+                                                <!-- Citas will be loaded here via JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted" id="citasHoyPagInfo"></small>
+                                    </div>
+                                    <div class="d-flex justify-content-center align-items-center gap-2 mt-2">
+                                        <button id="citasHoyAnterior" class="btn btn-outline-primary" onclick="citasHoyAnterior()">Anterior</button>
+                                        <button id="citasHoySiguiente" class="btn btn-outline-primary" onclick="citasHoySiguiente()">Siguiente</button>
+                                        <a href="/GestionesCitas" class="btn btn-outline-primary">Ver Todas las Citas</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>Veterinarios</h5>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-primary" onclick="window.previousVeterinarios()">
+                                        <i class="icon-left-open"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" onclick="window.nextVeterinarios()">
+                                        <i class="icon-right-open"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${#lists.isEmpty(veterinariosDTO)}">
+                                    <p class="text-muted">No hay veterinarios registrados.</p>
+                                </div>
+                                <div th:if="${!#lists.isEmpty(veterinariosDTO)}" id="veterinariosCarousel">
+                                    <div class="row" id="veterinariosContainer">
+                                        <!-- Veterinarians will be loaded here via JavaScript -->
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted" id="veterinariosCounter"></small>
+                                    </div>
+                                </div>
+                                <a href="/recepcionista/veterinarios" class="btn btn-outline-primary mt-3">Ver Todos los Veterinarios</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal for Cita Details -->
+            <div class="modal fade" id="citaDetailsModal" tabindex="-1" aria-labelledby="citaDetailsModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="citaDetailsModalLabel">Detalles de la Cita</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="citaDetailsContent">
+                            <!-- Content will be loaded here -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-primary" onclick="editCita()">Editar Cita</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .veterinario-card {
+                transition: transform 0.2s ease-in-out;
+                cursor: pointer;
+            }
+            
+            .veterinario-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+            
+            .table-hover tbody tr:hover {
+                background-color: #f8f9fa;
+            }
+        </style>
+            
+            <script th:inline="javascript">
+                window.veterinarios = /*[[${veterinariosDTO}]]*/ [];
+                window.citasHoy = /*[[${citasHoy}]]*/ [];
+                console.log('DASHBOARD CARGADO - Veterinarios:', window.veterinarios);
+                console.log('DASHBOARD CARGADO - Citas de hoy:', window.citasHoy);
+                // Pagination state for Citas de Hoy
+                let citasHoyPage = 0;
+                const citasPorPagina = 5;
+
+                function getCitasHoyFiltradas() {
+                    // Only show citas that are not completed
+                    return (window.citasHoy || []).filter(c => c.estado !== 'Completada');
+                }
+
+                function renderCitasHoy() {
+                    const citas = getCitasHoyFiltradas();
+                    const start = citasHoyPage * citasPorPagina;
+                    const end = start + citasPorPagina;
+                    const citasPagina = citas.slice(start, end);
+                    const tbody = document.getElementById('citasHoyTbody');
+                    if (!tbody) return;
+                    tbody.innerHTML = '';
+                    citasPagina.forEach(cita => {
+                        const tr = document.createElement('tr');
+                        tr.setAttribute('style', 'cursor: pointer;');
+                        tr.setAttribute('onclick', `showCitaDetails(${cita.id})`);
+                        tr.innerHTML = `
+                            <td>${cita.hora || ''}</td>
+                            <td>${cita.dueno && cita.dueno.usuario ? cita.dueno.usuario.nombres + ' ' + cita.dueno.usuario.apellidos : 'N/A'}</td>
+                            <td>${cita.mascota ? cita.mascota.nombre : 'N/A'}</td>
+                            <td>${cita.veterinario && cita.veterinario.usuario ? cita.veterinario.usuario.nombres + ' ' + cita.veterinario.usuario.apellidos : 'N/A'}</td>
+                            <td><span class="${cita.estado === 'Completada' ? 'badge bg-success' : cita.estado === 'Cancelada' ? 'badge bg-danger' : cita.estado === 'En proceso' ? 'badge bg-warning' : cita.estado === 'Pendiente' ? 'badge bg-secondary' : 'badge bg-warning'}">${cita.estado}</span></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    // Update pagination info
+                    const pagInfo = document.getElementById('citasHoyPagInfo');
+                    if (pagInfo) {
+                        if (citas.length === 0) {
+                            pagInfo.textContent = 'No hay citas programadas para hoy.';
+                        } else {
+                            pagInfo.textContent = `Mostrando ${start + 1}-${Math.min(end, citas.length)} de ${citas.length} citas`;
+                        }
+                    }
+                    // Enable/disable buttons
+                    const btnAnt = document.getElementById('citasHoyAnterior');
+                    const btnSig = document.getElementById('citasHoySiguiente');
+                    if (btnAnt) btnAnt.disabled = citasHoyPage === 0;
+                    if (btnSig) btnSig.disabled = end >= citas.length;
+                }
+
+                // Veterinarios rendering and modal
+                function renderVeterinarios() {
+                    const container = document.getElementById('veterinariosContainer');
+                    if (!container || !window.veterinarios) return;
+                    container.innerHTML = '';
+                    window.veterinarios.forEach((vet, idx) => {
+                        const div = document.createElement('div');
+                        div.className = 'col-md-4 mb-3';
+                        div.innerHTML = `
+                            <div class="card veterinario-card" onclick="showVeterinarioDetails(${idx})">
+                                <div class="card-body">
+                                    <strong>${vet.nombres} ${vet.apellidos}</strong><br>
+                                    ${vet.especialidad || 'General'}<br>
+                                    ${vet.email ? `<a href='mailto:${vet.email}'>${vet.email}</a>` : 'Sin email'}<br>
+                                    <a href="tel:${vet.celular || ''}">${vet.celular ? vet.celular : 'Sin teléfono'}</a>
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                    // Update counter
+                    const counter = document.getElementById('veterinariosCounter');
+                    if (counter) {
+                        counter.textContent = `Mostrando 1-${window.veterinarios.length} de ${window.veterinarios.length} veterinarios`;
+                    }
+                }
+
+                window.showVeterinarioDetails = function(idx) {
+                    const vet = window.veterinarios[idx];
+                    if (!vet) return;
+                    // Cambiar el título del modal
+                    document.getElementById('citaDetailsModalLabel').textContent = 'Información del Veterinario';
+                    let html = `
+                        <h5>${vet.nombres} ${vet.apellidos}</h5>
+                        <p><strong>Especialidad:</strong> ${vet.especialidad || 'General'}</p>
+                        <p><strong>Email:</strong> ${vet.email ? `<a href='mailto:${vet.email}'>${vet.email}</a>` : 'Sin email'}</p>
+                        <p><strong>Teléfono:</strong> ${vet.celular || 'Sin teléfono'}</p>
+                    `;
+                    // Reuse the cita details modal
+                    const modalContent = document.getElementById('citaDetailsContent');
+                    if (modalContent) {
+                        modalContent.innerHTML = html;
+                        // Ocultar el botón Editar Cita
+                        document.querySelector('#citaDetailsModal .btn-primary').style.display = 'none';
+                        const modal = new bootstrap.Modal(document.getElementById('citaDetailsModal'));
+                        modal.show();
+                    }
+                };
+
+                // Make these functions global
+                window.citasHoyAnterior = function() {
+                    if (citasHoyPage > 0) {
+                        citasHoyPage--;
+                        renderCitasHoy();
+                    }
+                };
+                window.citasHoySiguiente = function() {
+                    const citas = getCitasHoyFiltradas();
+                    if ((citasHoyPage + 1) * citasPorPagina < citas.length) {
+                        citasHoyPage++;
+                        renderCitasHoy();
+                    }
+                };
+                
+                // Veterinarios navigation functions
+                window.previousVeterinarios = function() {
+                    // Implementar navegación de veterinarios si es necesario
+                    console.log('Navegación anterior de veterinarios');
+                };
+                window.nextVeterinarios = function() {
+                    // Implementar navegación de veterinarios si es necesario
+                    console.log('Navegación siguiente de veterinarios');
+                };
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    renderCitasHoy();
+                    renderVeterinarios();
+                });
+
+                function editCita() {
+                    if (window.selectedCitaId) {
+                        window.location.href = `/GestionesCitas?citaId=${window.selectedCitaId}`;
+                    } else {
+                        alert('No hay cita seleccionada para editar');
+                    }
+                }
+
+                // Restaurar el título y el botón cuando se muestre una cita
+                function showCitaDetails(id) {
+                    document.getElementById('citaDetailsModalLabel').textContent = 'Detalles de la Cita';
+                    document.querySelector('#citaDetailsModal .btn-primary').style.display = '';
+                    
+                    // Buscar la cita por ID
+                    const cita = window.citasHoy.find(c => c.id === id);
+                    if (!cita) {
+                        console.error('Cita no encontrada con ID:', id);
+                        return;
+                    }
+                    
+                    // Mostrar detalles de la cita
+                    const modalContent = document.getElementById('citaDetailsContent');
+                    if (modalContent) {
+                        let html = `
+                            <h5>Cita #${cita.id}</h5>
+                            <p><strong>Fecha:</strong> ${cita.fecha}</p>
+                            <p><strong>Hora:</strong> ${cita.hora}</p>
+                            <p><strong>Estado:</strong> ${cita.estado}</p>
+                            <p><strong>Cliente:</strong> ${cita.dueno && cita.dueno.usuario ? cita.dueno.usuario.nombres + ' ' + cita.dueno.usuario.apellidos : 'N/A'}</p>
+                            <p><strong>Mascota:</strong> ${cita.mascota ? cita.mascota.nombre : 'N/A'}</p>
+                            <p><strong>Veterinario:</strong> ${cita.veterinario && cita.veterinario.usuario ? cita.veterinario.usuario.nombres + ' ' + cita.veterinario.usuario.apellidos : 'N/A'}</p>
+                        `;
+                        
+                        if (cita.observaciones) {
+                            html += `<p><strong>Observaciones:</strong> ${cita.observaciones}</p>`;
+                        }
+                        
+                        modalContent.innerHTML = html;
+                        window.selectedCitaId = id;
+                        
+                        const modal = new bootstrap.Modal(document.getElementById('citaDetailsModal'));
+                        modal.show();
+                    }
+                }
+            </script>
+        </div>
+    </body>
+</html> 

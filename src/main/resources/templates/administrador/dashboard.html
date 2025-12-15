@@ -1,0 +1,214 @@
+<html layout:decorate="_layoutAdministrador">
+    <head>
+        <title>Dashboard - Administrador</title>
+    <style>
+        .stat-card {
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 1.5rem 1.2rem;
+            margin-bottom: 1.5rem;
+            background: #fff;
+            transition: box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        .stat-label {
+            color: #888;
+            font-size: 1.1rem;
+        }
+        /* Centrado de la fila de métodos de pago */
+        .metodos-pago-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .metodo-pago-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+            min-height: 80px;
+            margin: 0 8px;
+        }
+    </style>
+    </head>
+    <body>
+        <div layout:fragment="content">
+            <div class="container mt-4">
+        <div class="row mb-4">
+                    <div class="col-12">
+                <h2 class="fw-bold">Dashboard - Administrador</h2>
+                        <p class="lead">Panel de control para administradores del sistema</p>
+                    </div>
+                </div>
+                
+        <!-- Accesos rápidos -->
+        <div class="row mb-4 justify-content-center">
+            <div class="col-md-4 d-flex mb-3">
+                <div class="card text-center h-100 w-100">
+                    <div class="card-body">
+                        <i class="icon-users" style="font-size: 2.2rem; color: #dc3545;"></i>
+                        <h5 class="card-title mt-2">Gestión de Clientes</h5>
+                        <p class="card-text">Administra los dueños/clientes de tu clínica</p>
+                        <a href="/administrador/gestion-usuarios" class="btn btn-primary">Gestionar Clientes</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 d-flex mb-3">
+                <div class="card text-center h-100 w-100">
+                    <div class="card-body">
+                        <i class="icon-user-md" style="font-size: 2.2rem; color: #17a2b8;"></i>
+                        <h5 class="card-title mt-2">Gestión de Personal</h5>
+                        <p class="card-text">Administra veterinarios y recepcionistas</p>
+                        <a href="/administrador/gestion-personal" class="btn btn-primary">Gestionar Personal</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 d-flex mb-3">
+                <div class="card text-center h-100 w-100">
+                    <div class="card-body">
+                        <i class="icon-bell" style="font-size: 2.2rem; color: #fd7e14;"></i>
+                        <h5 class="card-title mt-2">Notificaciones</h5>
+                        <p class="card-text">Visualiza notificaciones y alertas internas</p>
+                        <a href="/administrador/notificaciones" class="btn btn-primary">Ver Notificaciones</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+                
+        <!-- Estadísticas del sistema -->
+                <div class="row mt-4">
+            <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                        <h5>Estadísticas del Sistema</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Primera fila: 3 tarjetas -->
+                            <div class="col-md-4 col-12">
+                                <div class="stat-card text-center">
+                                    <div class="stat-icon"><i class="icon-user" style="color:#007bff;"></i></div>
+                                    <div class="stat-value text-primary">[[${totalDuenos}]]</div>
+                                    <div class="stat-label">Clientes (Dueños)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <div class="stat-card text-center">
+                                    <div class="stat-icon"><i class="icon-paw" style="color:#28a745;"></i></div>
+                                    <div class="stat-value text-success">[[${totalMascotas}]]</div>
+                                    <div class="stat-label">Mascotas Registradas</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <div class="stat-card text-center">
+                                    <div class="stat-icon"><i class="icon-user-md" style="color:#17a2b8;"></i></div>
+                                    <div class="stat-value text-info">[[${totalEmpleados}]]</div>
+                                    <div class="stat-label">Empleados</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!-- Segunda fila: 3 tarjetas -->
+                            <div class="col-md-4 col-12">
+                                <div class="stat-card text-center">
+                                    <div class="stat-icon"><i class="icon-calendar" style="color:#ffc107;"></i></div>
+                                    <div class="stat-value text-warning">[[${totalCitas}]]</div>
+                                    <div class="stat-label">Citas Agendadas</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <div class="stat-card text-center">
+                                    <div class="stat-icon"><i class="icon-money" style="color:#28a745;"></i></div>
+                                    <div class="stat-value text-success">S/ [[${#numbers.formatDecimal(totalIngresos,1,2)}]]</div>
+                                    <div class="stat-label">Ingresos Totales</div>
+                    </div>
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <div class="stat-card text-center">
+                                    <div class="stat-icon"><i class="icon-clock" style="color:#007bff;"></i></div>
+                                    <div class="stat-value text-primary">[[${citasHoy}]]</div>
+                                    <div class="stat-label">Citas del Día</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!-- NUEVA FILA: Estadísticas de pagos y citas -->
+                            <div class="col-md-4 col-12">
+                                <div class="stat-card text-center">
+                                    <div class="stat-icon"><i class="icon-clock" style="color:#fd7e14;"></i></div>
+                                    <div class="stat-value text-warning">[[${citasPendientesPago}]]</div>
+                                    <div class="stat-label">Citas Pendientes de Pago</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <div class="stat-card text-center">
+                                    <div class="stat-icon"><i class="icon-credit-card" style="color:#28a745;"></i></div>
+                                    <div class="stat-value text-success">[[${citasPagadas}]]</div>
+                                    <div class="stat-label">Pagos Realizados</div>
+                    </div>
+                </div>
+                            <div class="col-md-4 col-12">
+                                <div class="stat-card text-center">
+                                    <div class="stat-icon"><i class="icon-stats-bars" style="color:#007bff;"></i></div>
+                                    <div class="stat-value text-primary">[[${totalPagos}]]</div>
+                                    <div class="stat-label">Total de Pagos</div>
+                                </div>
+                            </div>
+                        </div>
+                                <div class="row">
+                            <!-- ÚLTIMA FILA: Pagos por método ocupa toda la fila -->
+                            <div class="col-md-12 col-12">
+                                <div class="stat-card text-center">
+                                    <div class="stat-icon"><i class="icon-credit-card" style="color:#6f42c1;"></i></div>
+                                    <div class="metodos-pago-row">
+                                        <div class="metodo-pago-card">
+                                            <div class="stat-value text-dark">[[${efectivo}]]</div>
+                                            <div style="font-size:1rem; color:#888;">Efectivo</div>
+                                        </div>
+                                        <div class="metodo-pago-card">
+                                            <div class="stat-value text-dark">[[${pos}]]</div>
+                                            <div style="font-size:1rem; color:#888;">POS</div>
+                                        </div>
+                                        <div class="metodo-pago-card">
+                                            <div class="stat-value text-dark">[[${yape}]]</div>
+                                            <div style="font-size:1rem; color:#888;">Yape</div>
+                                        </div>
+                                        <div class="metodo-pago-card">
+                                            <div class="stat-value text-dark">[[${plin}]]</div>
+                                            <div style="font-size:1rem; color:#888;">Plin</div>
+                                    </div>
+                                        <div class="metodo-pago-card">
+                                            <div class="stat-value text-dark">[[${transferencia}]]</div>
+                                            <div style="font-size:1rem; color:#888;">Transferencia</div>
+                                    </div>
+                                        <div class="metodo-pago-card">
+                                            <div class="stat-value text-dark">[[${otros}]]</div>
+                                            <div style="font-size:1rem; color:#888;">Otros</div>
+                                    </div>
+                                    </div>
+                                    <div class="stat-label mt-2">Pagos por Método</div>
+                                </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html> 

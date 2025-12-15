@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <title>Gestión de Personal - VetGes</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/iconos/fontello.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+    <style>
+        .social-icons a {
+            color: #6c757d !important;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .social-icons a:hover {
+            color: #495057 !important;
+        }
+        .social-icons i {
+            font-size: 1.5rem;
+        }
+        
+        /* Estilos específicos para gestión de personal */
+        .personal-card {
+            width: 100%;
+            max-width: 700px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 14px;
+            background: #fff;
+            margin-bottom: 1.5rem;
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .personal-info {
+            flex: 1;
+            text-align: left;
+        }
+        .personal-nombre {
+            color: #888;
+            font-size: 0.98rem;
+            margin-bottom: 0.5rem;
+        }
+        .personal-tipo {
+            font-size: 2.08rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        .btn-eliminar {
+            background: #2196f3;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            padding: 0.4rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-eliminar:hover {
+            background: #1769aa;
+        }
+        .btn-info {
+            background: #f5f5f5;
+            border: 1px solid #bdbdbd;
+            border-radius: 6px;
+            color: #333;
+            padding: 0.35rem 1.1rem;
+            font-size: 0.98rem;
+            cursor: pointer;
+            transition: background 0.2s, border 0.2s;
+        }
+        .btn-info:hover {
+            background: #e0e0e0;
+            border: 1px solid #2196f3;
+            color: #2196f3;
+        }
+        .btn-registrar {
+            position: fixed;
+            right: 2rem;
+            bottom: 2rem;
+            z-index: 1050;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        @media (max-width: 800px) {
+            .personal-card { max-width: 100%; }
+        }
+        @media (max-width: 600px) {
+            .btn-registrar { right: 1rem; bottom: 1rem; }
+            .personal-card { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <img src="/iconos/LogoVetGes.png" alt="Logo VetGes" style="height: 40px;">
+                <a class="navbar-brand" href="/">UTP VetGes</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/administrador/gestion-personal">Gestión de Personal</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/administrador/dashboard">Dashboard</a>
+                        </li>
+                    </ul>
+                    
+                    <!-- User authentication section -->
+                    <ul class="navbar-nav">
+                        <li th:if="${session.usuario != null}" class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="icon-user"></i> 
+                                <span th:text="${session.usuario.nombres + ' ' + session.usuario.apellidos}"></span>
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="/profile">Mi Perfil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/logout">Cerrar Sesión</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <div layout:fragment="content">
+            <!-- Contenido específico de gestión de personal -->
+        </div>
+    </div>
+
+    <footer class="bg-white text-center mt-5 pt-4 border-top">
+        <div class="container">
+            <div class="row justify-content-center mb-3">
+                <div class="col-md-auto">
+                    <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Sobre Nosotros</a>
+                    <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Compañía</a>
+                    <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Clínica</a>
+                    <img src="/iconos/LogoVetGes.png" alt="Logo VetGes" style="height: 30px;">
+                    <span class="fw-bold fs-5 align-middle">VetGes</span>
+                    <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Ayuda al cliente</a>
+                    <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Recomendaciones</a>
+                    <a href="#" class="text-dark mx-3 text-decoration-none fw-bold">Recursos</a>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center mb-2 social-icons">
+                <span class="mx-2">
+                    <a href="https://wa.me/51906055403?text=Buenas%20tardes%2C%20me%20gustar%C3%ADa%20saber%20que%20horarios%20est%C3%A1n%20disponibles%20para%20el%20agendamiento%20de%20una%20cita" target="_blank" rel="noopener noreferrer">
+                      <i class="icon-whatsapp"></i>
+                    </a>
+                </span> 
+                
+                <span class="mx-2">
+                    <a href="#">
+                        <i class="icon-instagram"></i>
+                    </a>
+                </span>
+
+                <span class="mx-2">
+                    <a href="#">
+                    <i class="icon-facebook"></i>
+                    </a>
+                </span>
+
+                <span class="mx-2">
+                    <a href="#">
+                        <i class="icon-twitter"></i>
+                    </a>
+                </span>
+                
+            </div>
+            <div class="pb-3 text-muted small">
+                © RegistroClínico, Nosotros amamos nuestros clientes
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.6.1/vue-resource.min.js"></script>
+    <script layout:fragment="script">
+        // Scripts específicos para gestión de personal
+    </script>
+</body>
+</html> 
